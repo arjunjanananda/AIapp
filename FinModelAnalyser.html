@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Financial Model Validator</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #00a884; /* WhatsApp Green for finance/validation */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --card-border: #444;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12; /* Orange for warnings */
+            --info-color: #3498db; /* Blue for suggestions */
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .validator-container {
+            max-width: 1000px; /* Good width */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .validator-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .validator-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .validator-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Step Section Styling --- */
+         .step-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+         .step-section h2 {
+             font-size: 1.3em;
+             font-weight: 600;
+             margin-bottom: 20px;
+             color: var(--text-primary);
+             border-bottom: 1px solid var(--border-light);
+             padding-bottom: 10px;
+              display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+          .step-section h2 .step-number {
+              background-color: var(--accent-secondary);
+              color: var(--bg-primary);
+              border-radius: 50%;
+              width: 28px;
+              height: 28px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.8em;
+              font-weight: bold;
+          }
+
+
+        /* --- File Upload --- */
+         .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 15px;
+            background-color: var(--bg-input);
+        }
+        .upload-area:hover {
+            background-color: rgba(0, 168, 132, 0.1); /* Accent color tint */
+            border-color: var(--accent-secondary);
+        }
+        .upload-area i {
+            font-size: 2.5em;
+            color: var(--accent-secondary);
+            margin-bottom: 10px;
+        }
+        .upload-area p {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+        .upload-area span {
+            color: var(--accent-secondary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+         .upload-area small {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            display: block;
+            margin-top: 8px;
+        }
+         .file-info {
+            padding: 8px 12px;
+            background-color: rgba(0, 168, 132, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* --- Context & Options Grid --- */
+        .context-options-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+             gap: 20px 25px; /* Row and column gap */
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+         }
+         .form-group label {
+             margin-bottom: 6px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+          .form-group label i {
+              margin-right: 5px;
+              font-size: 0.9em;
+          }
+         .form-group input[type="text"],
+         .form-group select,
+         .form-group textarea {
+             width: 100%;
+             padding: 10px 12px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea {
+             min-height: 60px;
+             resize: vertical;
+         }
+          .form-group input:focus,
+          .form-group select:focus,
+          .form-group textarea:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+              box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+
+         /* Checkbox options */
+        .options-group label { /* Label for the group */
+             grid-column: 1 / -1; /* Span full width */
+              margin-bottom: 10px;
+              font-size: 1em;
+             color: var(--text-primary);
+             font-weight: 500;
+        }
+         .options-list {
+             grid-column: 1 / -1; /* Span full width */
+             display: flex;
+             flex-wrap: wrap;
+             gap: 15px;
+         }
+         .options-list label { /* Individual checkbox label */
+            display: inline-flex; /* Use flex for better alignment */
+            align-items: center;
+            background-color: var(--bg-input);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+            font-size: 0.9em;
+            font-weight: normal; /* Reset weight */
+             color: var(--text-primary); /* Reset color */
+        }
+         .options-list label:hover {
+             border-color: var(--border-light);
+         }
+         .options-list input[type="checkbox"] {
+             margin-right: 8px;
+             accent-color: var(--accent-secondary); /* Style checkbox color */
+             width: 15px;
+             height: 15px;
+         }
+
+         /* --- Validation Trigger --- */
+         .validation-trigger-section {
+            text-align: center;
+            padding-top: 15px; /* Space above button */
+             margin-bottom: 25px;
+         }
+          #validate-button {
+            padding: 12px 35px; /* Larger button */
+            font-size: 1.1em;
+            background-color: var(--accent-secondary); /* Use accent color */
+            color: var(--bg-primary); /* Dark text */
+            font-weight: 600;
+        }
+        #validate-button:hover {
+             background-color: #117a65; /* Darker green */
+        }
+         #validate-button:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+             background-color: var(--bg-tertiary);
+             color: var(--text-secondary);
+             border: 1px solid var(--border-color);
+         }
+
+
+        /* --- Results Section --- */
+         #results-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+         }
+         #results-section h2 {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+              display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+
+         #validation-status {
+             text-align: center;
+             margin-bottom: 25px;
+             font-size: 1.1em;
+             color: var(--accent-primary);
+             padding: 15px;
+             background-color: var(--bg-input);
+             border-radius: 6px;
+         }
+         #validation-status i {
+              margin-right: 8px;
+         }
+
+         .results-summary {
+             text-align: center;
+             margin-bottom: 25px;
+             padding: 15px;
+             background-color: var(--bg-input);
+             border-radius: 6px;
+             border: 1px solid var(--border-color);
+         }
+          .results-summary h3 {
+             font-size: 1.1em;
+             font-weight: 600;
+             margin-bottom: 10px;
+             color: var(--text-primary);
+          }
+          .summary-score {
+             font-size: 1.6em;
+             font-weight: bold;
+             color: var(--accent-secondary);
+             display: block;
+             margin-bottom: 5px;
+          }
+          .summary-verdict {
+               font-size: 1em;
+               font-weight: 500;
+               display: block;
+               margin-bottom: 10px;
+          }
+           .summary-verdict.good { color: var(--success-color); }
+           .summary-verdict.issues { color: var(--warning-color); }
+           .summary-verdict.errors { color: var(--danger-color); }
+
+         .results-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between result blocks */
+         }
+
+         .result-block {
+            background-color: var(--bg-input);
+            padding: 15px 20px;
+            border-radius: 4px;
+            border-left: 4px solid; /* Left border indicates severity */
+         }
+          .result-block.error { border-left-color: var(--danger-color); }
+          .result-block.warning { border-left-color: var(--warning-color); }
+          .result-block.suggestion { border-left-color: var(--info-color); }
+          .result-block.info { border-left-color: var(--text-secondary); }
+
+          .result-block h4 { /* Category title */
+            font-size: 1.05em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+         }
+          .result-block h4 i { /* Icon */
+             font-size: 1.1em;
+         }
+          .result-block.error h4 i { color: var(--danger-color); }
+          .result-block.warning h4 i { color: var(--warning-color); }
+          .result-block.suggestion h4 i { color: var(--info-color); }
+          .result-block.info h4 i { color: var(--text-secondary); }
+
+          .result-block ul {
+             list-style: none; /* Use custom styling or none */
+             padding-left: 5px;
+             margin: 0;
+         }
+         .result-block li {
+             margin-bottom: 8px;
+             font-size: 0.95em;
+             line-height: 1.5;
+         }
+          .result-block li strong { /* Highlight cell refs or key terms */
+             color: var(--text-primary);
+             font-weight: 600;
+             background-color: var(--bg-tertiary);
+             padding: 1px 4px;
+             border-radius: 3px;
+             font-family: Consolas, Monaco, monospace;
+             font-size: 0.9em;
+             margin-right: 3px;
+         }
+
+        /* General Button Style */
+         .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="validator-container">
+        <header class="validator-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-clipboard-check"></i> Financial Model Validator</h1>
+        </header>
+
+        <section id="input-section" class="step-section">
+             <h2><span class="step-number">1</span> Upload Model & Provide Context</h2>
+             <div class="context-options-grid">
+                 <div class="form-group file-upload-group"> <!-- File Upload -->
+                     <label for="file-upload-input"><i class="fas fa-file-excel"></i> Upload Financial Model*</label>
+                     <div class="upload-area" id="upload-area">
+                        <input type="file" id="file-upload-input" accept=".xlsx,.xls" hidden/> <!-- Focus on Excel -->
+                        <label for="file-upload-input">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & Drop Excel file here</p>
+                            <p>or <span>Browse Files</span></p>
+                            <small>(Supports: XLSX, XLS)</small>
+                        </label>
+                    </div>
+                     <div id="file-info" class="file-info hidden">
+                        File Selected: <strong id="loaded-file-name"></strong> (<span id="loaded-file-size"></span>)
+                    </div>
+                 </div>
+
+                 <div class="form-group context-group"> <!-- Context Inputs -->
+                    <label for="business-type"><i class="fas fa-building"></i> Business Type / Industry*</label>
+                    <input type="text" id="business-type" placeholder="e.g., B2B SaaS, E-commerce, Biotech">
+
+                     <label for="company-stage" style="margin-top: 15px;"><i class="fas fa-layer-group"></i> Company Stage*</label>
+                    <select id="company-stage">
+                        <option value="">Select Stage...</option>
+                        <option value="Pre-Seed/Idea">Pre-Seed / Idea</option>
+                        <option value="Seed">Seed</option>
+                        <option value="Series A">Series A</option>
+                        <option value="Growth Stage">Growth Stage</option>
+                         <option value="Mature">Mature</option>
+                    </select>
+
+                     <label for="model-purpose" style="margin-top: 15px;"><i class="fas fa-bullseye"></i> Purpose of Model*</label>
+                    <select id="model-purpose">
+                        <option value="">Select Purpose...</option>
+                        <option value="Fundraising">Fundraising</option>
+                        <option value="Internal Budgeting/Forecasting">Internal Budgeting/Forecasting</option>
+                        <option value="Valuation">Valuation</option>
+                        <option value="Scenario Planning">Scenario Planning</option>
+                        <option value="Other">Other</option>
+                    </select>
+                 </div>
+            </div>
+        </section>
+
+        <section id="options-section" class="step-section">
+             <h2><span class="step-number">2</span> Select Analysis Focus (Optional)</h2>
+             <div class="options-list">
+                <label>
+                    <input type="checkbox" name="analysis_option" value="formula_errors" checked> Check Formula Errors & Links
+                </label>
+                 <label>
+                    <input type="checkbox" name="analysis_option" value="consistency" checked> Verify Internal Consistency
+                </label>
+                <label>
+                    <input type="checkbox" name="analysis_option" value="assumptions" checked> Assess Assumption Realism
+                </label>
+                <label>
+                    <input type="checkbox" name="analysis_option" value="best_practices"> Check Modeling Best Practices
+                </label>
+                 <label>
+                    <input type="checkbox" name="analysis_option" value="sensitivity"> Review Sensitivity/Scenario Setup
+                </label>
+             </div>
+        </section>
+
+
+         <section id="validate-trigger-section" class="step-section validation-trigger-section">
+            <button id="validate-button" class="btn" disabled><i class="fas fa-flask-vial"></i> Validate Financial Model</button>
+        </section>
+
+        <section id="results-section" class="step-section hidden">
+             <h2><span class="step-number">3</span> Validation Results</h2>
+             <div id="validation-status" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Analyzing model... Please wait. This may take a moment.
+             </div>
+             <div id="results-summary" class="results-summary hidden">
+                 <h3>Overall Assessment</h3>
+                 <span id="summary-score" class="summary-score">? / 10</span>
+                 <span id="summary-verdict" class="summary-verdict">Pending...</span>
+             </div>
+             <div id="results-details" class="results-details">
+                 <!-- Result blocks will be appended here by JS -->
+                 <!-- Example:
+                 <div class="result-block error">
+                     <h4><i class="fas fa-times-circle"></i> Formula Errors</h4>
+                     <ul>
+                         <li><strong>Sheet 'Revenue', Cell C5:</strong> #REF! error detected. Potential broken link.</li>
+                         <li><strong>Sheet 'Expenses', Cell D10:</strong> Circular reference detected involving [Cell Range].</li>
+                     </ul>
+                 </div>
+                 -->
+             </div>
+        </section>
+
+    </div> <!-- End validator Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileInfoDiv = document.getElementById('file-info');
+            const loadedFileName = document.getElementById('loaded-file-name');
+            const loadedFileSize = document.getElementById('loaded-file-size');
+
+            const businessTypeInput = document.getElementById('business-type');
+            const companyStageSelect = document.getElementById('company-stage');
+            const modelPurposeSelect = document.getElementById('model-purpose');
+            const analysisOptionsCheckboxes = document.querySelectorAll('input[name="analysis_option"]');
+
+            const validateButton = document.getElementById('validate-button');
+            const resultsSection = document.getElementById('results-section');
+            const validationStatus = document.getElementById('validation-status');
+            const resultsSummary = document.getElementById('results-summary');
+            const summaryScoreSpan = document.getElementById('summary-score');
+            const summaryVerdictSpan = document.getElementById('summary-verdict');
+            const resultsDetails = document.getElementById('results-details');
+
+            let selectedFile = null; // Store the File object
+
+            // --- Functions ---
+
+            function handleFile(file) {
+                // Basic validation
+                const allowedExtensions = /(\.xlsx|\.xls)$/i;
+                if (!allowedExtensions.exec(file.name)) {
+                   alert('Unsupported file type. Please upload an Excel file (XLSX or XLS).');
+                   fileInput.value = ''; // Clear the input
+                   return;
+                 }
+
+                selectedFile = file;
+                loadedFileName.textContent = file.name;
+                loadedFileSize.textContent = formatBytes(file.size);
+                fileInfoDiv.classList.remove('hidden');
+                checkIfReadyToValidate();
+            }
+
+            function checkIfReadyToValidate() {
+                // Define required context fields
+                const businessTypeText = businessTypeInput.value.trim();
+                const stageValue = companyStageSelect.value;
+                const purposeValue = modelPurposeSelect.value;
+
+                // Enable button only if file selected AND required context fields have values
+                validateButton.disabled = !(selectedFile && businessTypeText && stageValue && purposeValue);
+            }
+
+            function runValidation() {
+                if (!selectedFile || validateButton.disabled) return;
+
+                 // Capture context and options at the time of validation
+                 const modelContext = {
+                     businessType: businessTypeInput.value.trim(),
+                     stage: companyStageSelect.value,
+                     purpose: modelPurposeSelect.value,
+                 };
+                 const selectedOptions = [];
+                 analysisOptionsCheckboxes.forEach(cb => {
+                     if (cb.checked) {
+                         selectedOptions.push(cb.value);
+                     }
+                 });
+
+                console.log("Validating model:", selectedFile.name);
+                console.log("Context:", modelContext);
+                console.log("Selected Options:", selectedOptions);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden'); // Show the section
+                validationStatus.classList.remove('hidden'); // Show spinner
+                resultsSummary.classList.add('hidden'); // Hide summary until done
+                resultsDetails.innerHTML = ''; // Clear previous results details
+                validateButton.disabled = true; // Disable button
+                validateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
+                 // Optional: Disable inputs while validating
+                 // document.querySelectorAll('#input-section input, #input-section select, #input-section textarea, #options-section input').forEach(el => el.disabled = true);
+
+                // --- *** SIMULATE BACKEND ANALYSIS (Gemini API Call) *** ---
+                // In a real app:
+                // 1. Upload `selectedFile` (or potentially parse key data frontend using SheetJS if feasible/secure)
+                // 2. Send file data/reference, `modelContext`, and `selectedOptions` to your backend.
+                // 3. Backend prepares a detailed prompt for Gemini. This might involve:
+                //    - Extracting formulas, values, sheet structure from the Excel file (using libraries like openpyxl, pandas in Python).
+                //    - Feeding this structural data and values to Gemini.
+                //    - Asking Gemini to perform checks based on `selectedOptions` and `modelContext`. E.g.:
+                //      "Analyze this financial model structure and data for a [Stage] [Business Type] company using the model for [Purpose]. Context: [User assumptions if provided]. Focus on: [Selected Options list]. Check for formula errors (#REF!, #DIV/0!, circular refs), inconsistencies (e.g., revenue growth vs expense growth), unrealistic assumptions based on typical benchmarks for this stage/industry, and modeling best practices (labeling, structure, hardcoding). Provide findings categorized by severity (Error, Warning, Suggestion) with specific cell references if possible."
+                // 4. Receive structured analysis results (JSON ideally) from the backend.
+
+                setTimeout(() => {
+                    validationStatus.classList.add('hidden');
+                    validateButton.disabled = false; // Re-enable button
+                    validateButton.innerHTML = '<i class="fas fa-flask-vial"></i> Validate Financial Model';
+                     // Re-enable inputs if they were disabled
+                     // document.querySelectorAll('#input-section input, #input-section select, #input-section textarea, #options-section input').forEach(el => el.disabled = false);
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    const simulatedResults = getSimulatedResults(modelContext, selectedOptions);
+                    displayResults(simulatedResults);
+
+                    console.log("Simulated validation complete.");
+
+                }, 3500 + Math.random() * 2000); // Simulate longer analysis time for complex models
+            }
+
+            function displayResults(results) {
+                 resultsDetails.innerHTML = ''; // Clear details just in case
+                 let errorCount = 0;
+                 let warningCount = 0;
+
+                 // Display detailed findings first
+                 results.details.forEach(item => {
+                     const block = document.createElement('div');
+                     block.classList.add('result-block', item.severity); // error, warning, suggestion, info
+
+                     let iconClass = 'fa-info-circle'; // Default
+                     if (item.severity === 'error') { iconClass = 'fa-times-circle'; errorCount++; }
+                     if (item.severity === 'warning') { iconClass = 'fa-exclamation-triangle'; warningCount++; }
+                     if (item.severity === 'suggestion') { iconClass = 'fa-lightbulb'; }
+
+                     block.innerHTML = `
+                         <h4><i class="fas ${iconClass}"></i> ${escapeHtml(item.category)}</h4>
+                         <ul>
+                             ${item.findings.map(finding => `<li>${formatFinding(finding)}</li>`).join('')}
+                         </ul>
+                     `;
+                     resultsDetails.appendChild(block);
+                 });
+
+                 // Update Summary based on findings
+                 let score = 9 - errorCount * 2 - warningCount; // Simple scoring logic
+                 score = Math.max(1, Math.min(10, score)); // Clamp score between 1-10
+                 let verdict = "Looks Good";
+                 let verdictClass = "good";
+                 if (warningCount > 0 || errorCount > 0) { verdict = "Minor Issues Found"; verdictClass = "issues"; }
+                 if (errorCount > 0) { verdict = "Significant Errors Found"; verdictClass = "errors"; }
+
+
+                 summaryScoreSpan.textContent = `${score}/10`;
+                 summaryVerdictSpan.textContent = verdict;
+                 summaryVerdictSpan.className = `summary-verdict ${verdictClass}`; // Apply class for color
+                 resultsSummary.classList.remove('hidden'); // Show summary now
+
+            }
+
+            // Helper to format finding text, potentially highlighting cell refs
+             function formatFinding(findingText) {
+                 // Find potential cell references (e.g., A1, C5:D10, SheetName!B2) and wrap them
+                 return escapeHtml(findingText).replace(/([A-Z]+[0-9]+(:[A-Z]+[0-9]+)?|'[^\s'!]+'![A-Z]+[0-9]+)/g, '<strong>$&</strong>');
+             }
+
+
+            function getSimulatedResults(context, options) {
+                // Generate dummy results based on context/options
+                const results = { details: [] };
+                let hasErrors = Math.random() < 0.3; // 30% chance of errors
+                let hasWarnings = Math.random() < 0.6; // 60% chance of warnings
+
+                if (options.includes('formula_errors') && hasErrors) {
+                     results.details.push({
+                         severity: 'error',
+                         category: 'Formula & Link Errors',
+                         findings: [
+                             `Sheet 'Projections', Cell E15: #REF! error. Check linked source.`,
+                             `Sheet 'Costs', Range C10:C20: Potential circular reference detected.`,
+                              `Sheet 'Dashboard', Cell B2: #DIV/0! error. Check divisor in formula.`
+                         ]
+                     });
+                }
+
+                 if (options.includes('consistency') && (hasErrors || hasWarnings)) {
+                      results.details.push({
+                         severity: 'warning',
+                         category: 'Consistency Checks',
+                         findings: [
+                             `Revenue growth assumptions (Sheet 'Projections', Row 5) appear high (+50% MoM) compared to historicals or expense growth.`,
+                             `Cost of Goods Sold (COGS) as a % of revenue fluctuates significantly without clear explanation (Sheet 'Financials', F10).`,
+                              `Headcount growth (Sheet 'HR', C30) seems disconnected from revenue projections in later years.`
+                         ]
+                     });
+                 }
+
+                 if (options.includes('assumptions') && hasWarnings) {
+                     results.details.push({
+                         severity: 'warning',
+                         category: 'Assumption Realism',
+                         findings: [
+                             `Market adoption rate assumption (Sheet 'Market', B5) of 60% in Year 1 seems optimistic for a ${context.stage} ${context.businessType} business. Consider justifying or adjusting.`,
+                             `Customer Acquisition Cost (CAC) assumption (Sheet 'Marketing', E8) of $50 might be low for the target audience, especially if the model purpose is ${context.purpose}. Benchmark against industry data.`,
+                             `Churn rate assumption stable at 1% (Sheet 'Metrics', G12) may be unrealistic without strong supporting evidence for this stage.`
+                         ]
+                     });
+                 }
+
+                  if (options.includes('best_practices')) {
+                      results.details.push({
+                         severity: 'suggestion',
+                         category: 'Modeling Best Practices',
+                         findings: [
+                             `Consider adding input cells for key drivers (e.g., growth rate, CAC) instead of hardcoding values in formulas (e.g., Sheet 'Projections', E6).`,
+                             `Improve labeling and commenting for complex formulas (e.g., Sheet 'Waterfall', Column F).`,
+                             `Add data validation or conditional formatting to highlight key inputs/outputs.`
+                         ]
+                     });
+                  }
+
+                   if (options.includes('sensitivity') && Math.random() < 0.7) { // Less likely to have issues here unless requested
+                       results.details.push({
+                         severity: 'suggestion',
+                         category: 'Sensitivity / Scenario Analysis',
+                         findings: [
+                             `Model lacks a dedicated sensitivity analysis table for key assumptions (e.g., price, churn, growth rate).`,
+                             `Consider adding best-case/worst-case scenarios alongside the base case for more robust ${context.purpose}.`
+                         ]
+                     });
+                   }
+
+                   // Add an info block if no major issues found based on random chance
+                   if (!hasErrors && !hasWarnings && results.details.length < 2) {
+                        results.details.push({
+                         severity: 'info',
+                         category: 'General Observations',
+                         findings: [
+                             `Model structure appears logical for a ${context.stage} company.`,
+                             `Key financial statements (IS, BS, CF) seem present (content not deeply verified).`
+                         ]
+                     });
+                   }
+
+
+                return results;
+            }
+
+            // --- Utility Functions ---
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const div = document.createElement('div');
+                 div.textContent = String(unsafe);
+                 return div.innerHTML;
+             }
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+            // --- Initial Setup ---
+             checkIfReadyToValidate(); // Initial button state check
+             resultsSection.classList.add('hidden'); // Ensure results are hidden initially
+
+             // Event Listeners for validation check
+            fileInput.addEventListener('change', checkIfReadyToValidate);
+             [businessTypeInput, companyStageSelect, modelPurposeSelect].forEach(el => {
+                 el.addEventListener('input', checkIfReadyToValidate);
+                 if (el.tagName === 'SELECT') {
+                     el.addEventListener('change', checkIfReadyToValidate);
+                 }
+             });
+             validateButton.addEventListener('click', runValidation);
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Slide Deck Generator</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+     <!-- Font Awesome CDN -->
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+	    <!-- PptxGenJS Library (Using jsDelivr CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #d35400; /* Orange/Red for PPT */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .generator-container {
+            max-width: 1200px; /* Suitable width for content area */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .generator-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .generator-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .generator-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+         /* --- Top Prompt Section --- */
+        .top-prompt-section {
+            text-align: center;
+            margin-bottom: 35px; /* Space below this section */
+        }
+
+        .top-prompt-section h2 {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .top-search-bar {
+             max-width: 700px;
+             margin: 0 auto; /* Center the search bar */
+        }
+
+        .top-search-bar input {
+            width: 100%;
+            padding: 14px 20px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 25px; /* Pill shape */
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .top-search-bar input::placeholder {
+             color: var(--text-secondary);
+        }
+        .top-search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        /* --- Content Input Section --- */
+         .generator-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .generator-section h2 { /* Style for section headers */
+            font-size: 1.4em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+        }
+
+         .input-options {
+             margin-bottom: 15px;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             flex-wrap: wrap;
+             gap: 10px;
+         }
+          .input-options p {
+             font-size: 0.9em;
+             color: var(--text-secondary);
+         }
+
+
+        .content-input-area label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        #content-input {
+            width: 100%;
+            min-height: 250px; /* Good starting height */
+            padding: 15px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace for outlines */
+            font-size: 0.95em;
+            line-height: 1.5;
+            resize: vertical; /* Allow vertical resize */
+        }
+         #content-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+        }
+         .content-input-area .btn-secondary {
+            margin-top: 10px;
+            float: right;
+         }
+
+         /* --- Options Section --- */
+         .options-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+             gap: 20px;
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+         }
+         .form-group label {
+             margin-bottom: 5px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+         .form-group select {
+              padding: 10px 12px;
+              background-color: var(--bg-input);
+              border: 1px solid var(--border-color);
+              border-radius: 4px;
+              color: var(--text-primary);
+              font-family: inherit;
+              font-size: 0.95em;
+         }
+         .form-group select:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+              box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+         }
+
+        /* --- Generate Section --- */
+        .generate-section {
+             text-align: center;
+             padding: 10px 25px 25px 25px; /* Remove top padding, add bottom */
+             background-color: transparent; /* No background needed */
+             border: none;
+        }
+        #generate-ppt-btn {
+            padding: 12px 30px; /* Larger button */
+            font-size: 1.1em;
+            background-color: var(--accent-secondary); /* Use PPT color */
+            color: white;
+        }
+        #generate-ppt-btn:hover {
+             background-color: #b84300; /* Darker orange/red */
+        }
+
+
+        /* --- Output Section --- */
+         #generation-status {
+             text-align: center;
+             margin-top: 20px;
+             font-size: 1.1em;
+             color: var(--accent-primary);
+         }
+         #generation-status i {
+              margin-right: 8px;
+         }
+
+         #download-area {
+             text-align: center;
+             margin-top: 20px;
+             padding: 20px;
+             background-color: rgba(46, 204, 113, 0.1); /* Light success background */
+             border: 1px solid var(--success-color);
+             border-radius: 4px;
+         }
+         #download-area p {
+             margin-bottom: 15px;
+             color: var(--success-color);
+             font-weight: 500;
+         }
+         #download-link { /* Style link as button */
+             display: inline-block;
+             padding: 10px 25px;
+             background-color: var(--success-color);
+             color: white;
+             text-decoration: none;
+             border-radius: 5px;
+             font-weight: 500;
+             transition: background-color 0.2s ease;
+         }
+          #download-link i {
+             margin-right: 8px;
+         }
+         #download-link:hover {
+             background-color: #27ae60;
+         }
+
+
+        /* --- General Button Styles --- */
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover { background-color: #3a7bc8; }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+        .btn-secondary:hover { background-color: #333; border-color: #666; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--bg-tertiary); border-color: var(--border-color); color: var(--text-secondary); }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .btn-success:hover { background-color: #27ae60; }
+         .btn-sm { /* Smaller button variant */
+             padding: 6px 12px;
+             font-size: 0.85em;
+         }
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="generator-container">
+        <header class="generator-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-file-powerpoint"></i> Slide Deck Generator</h1>
+        </header>
+
+        <section class="top-prompt-section">
+            <h2>How do you want to create your presentation?</h2>
+            <div class="top-search-bar">
+                 <input type="text" id="top-search-input" placeholder="e.g., 'Create a 5-slide presentation about project alpha results'">
+            </div>
+        </section>
+
+        <section class="generator-section input-section">
+            <h2>Provide Your Content</h2>
+            <div class="input-options">
+                <p>Paste your outline or main points below.</p>
+                 <button id="generate-ai-btn" class="btn btn-secondary btn-sm"><i class="fas fa-magic-wand-sparkles"></i> Or Generate Sample with AI</button>
+            </div>
+            <div class="content-input-area">
+                <label for="content-input">Presentation Outline/Content:</label>
+                <textarea id="content-input" placeholder="Example:
+Slide 1: Title - Quarterly Results
+- Subtitle: Q3 2024 Performance
+
+Slide 2: Key Metrics
+- Revenue Growth: +15% YoY
+- Customer Acquisition Cost: Reduced by 5%
+- Churn Rate: Stable at 2%
+
+Slide 3: Challenges & Solutions
+- Challenge: Market Saturation
+- Solution: Explore new vertical markets...
+"></textarea>
+                 <button id="clear-input-btn" class="btn btn-secondary btn-sm" title="Clear Input"><i class="fas fa-times"></i> Clear</button>
+            </div>
+        </section>
+
+        <section class="generator-section options-section">
+             <h2>Options</h2>
+             <div class="options-grid">
+                 <div class="form-group">
+                     <label for="theme-select">Presentation Theme</label>
+                     <select id="theme-select">
+                         <option value="default-light">Default Light</option>
+                         <option value="default-dark">Default Dark</option>
+                         <option value="professional-blue">Professional Blue</option>
+                         <option value="modern-creative">Modern Creative</option>
+                     </select>
+                 </div>
+                  <!-- Add more options here if needed, e.g., aspect ratio -->
+             </div>
+        </section>
+
+         <section class="generator-section generate-section">
+            <button id="generate-ppt-btn" class="btn"><i class="fas fa-cogs"></i> Generate PPT</button>
+        </section>
+
+        <section class="generator-section output-section hidden" id="output-section">
+             <div id="generation-status">
+                 <i class="fas fa-spinner fa-spin"></i> Generating your presentation... Please wait.
+             </div>
+              <div id="download-area" class="hidden">
+                 <p><i class="fas fa-check-circle"></i> Your presentation is ready!</p>
+                 <a href="#" id="download-link" download="presentation.pptx">
+                    <i class="fas fa-download"></i> Download Presentation (.pptx)
+                </a>
+                 <p style="margin-top: 15px; font-size: 0.85em; color: var(--text-secondary);">(Note: This is a simulated download in this demo.)</p>
+             </div>
+        </section>
+
+    </div> <!-- End Generator Container -->
+
+
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+           // --- DOM Elements ---
+           const contentInput = document.getElementById('content-input');
+           const generateAiBtn = document.getElementById('generate-ai-btn');
+           const clearInputBtn = document.getElementById('clear-input-btn');
+           const themeSelect = document.getElementById('theme-select');
+           const generatePptBtn = document.getElementById('generate-ppt-btn');
+           const outputSection = document.getElementById('output-section');
+           const generationStatus = document.getElementById('generation-status');
+           const downloadArea = document.getElementById('download-area');
+           // const downloadLink = document.getElementById('download-link'); // Less relevant now
+           // const topSearchInput = document.getElementById('top-search-input');
+
+           // --- Sample AI Content ---
+           const sampleAiContent = `Slide 1: Introduction to AI SWAG
+   - Subtitle: Revolutionizing Your Workflow
+   - Our Mission & Vision
+
+   Slide 2: Core Features
+   - Feature A: Automated Task Management - Saves time
+   - Feature B: Data Analysis & Insights - Drive decisions
+   - Feature C: Content Generation - Boost creativity
+
+   Slide 3: Technology Stack
+   - Backend: Python, FastAPI
+   - Frontend: JavaScript, HTML, CSS
+   - AI/ML: TensorFlow, PyTorch
+
+   Slide 4: Target Audience
+   - Businesses seeking automation
+   - Data Analysts needing insights
+   - Marketing Teams creating content
+
+   Slide 5: Call to Action
+   - Visit our website: aiswag.com
+   - Request a Demo Today!
+   - Contact Us for more info`;
+
+           // --- Event Listeners ---
+
+           generateAiBtn.addEventListener('click', () => {
+               contentInput.value = sampleAiContent;
+               contentInput.scrollTop = 0;
+           });
+
+           clearInputBtn.addEventListener('click', () => {
+               contentInput.value = '';
+           });
+
+           // --- *** CORE PPT GENERATION LOGIC *** ---
+           generatePptBtn.addEventListener('click', () => {
+               const outline = contentInput.value.trim();
+               const selectedTheme = themeSelect.value;
+
+               if (!outline) {
+                   alert('Please provide content or an outline for your presentation.');
+                   contentInput.focus();
+                   return;
+               }
+
+               // --- 1. Update UI: Show Processing State ---
+               outputSection.classList.remove('hidden');
+               generationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Parsing content & generating PPTX...';
+               generationStatus.classList.remove('hidden');
+               downloadArea.classList.add('hidden'); // Hide download area initially
+               generatePptBtn.disabled = true;
+               generatePptBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+               try {
+                   // --- 2. Parse the Outline ---
+                   // This function needs to be robust for real-world use.
+                   const slidesData = parsePresentationOutline(outline);
+                   if (!slidesData || slidesData.length === 0) {
+                       throw new Error("Could not parse any slides from the input. Check the format.");
+                   }
+                   console.log("Parsed Slides Data:", slidesData); // For debugging
+
+                   // --- 3. Create a new PptxGenJS instance ---
+                   let pptx = new PptxGenJS();
+
+                   // --- 4. Apply Theme / Define Masters ---
+                   applyPresentationTheme(pptx, selectedTheme);
+
+                   // --- 5. Add Slides to the Presentation ---
+                   slidesData.forEach((slideContent) => {
+                       // Use the master name defined in applyPresentationTheme
+                       let slide = pptx.addSlide({ masterName: getMasterNameForTheme(selectedTheme) });
+
+                       // Add Title (adjust options based on theme master placeholders if defined)
+                       if (slideContent.title) {
+                           slide.addText(slideContent.title, {
+                               placeholder: "title", // Use placeholder if defined in master
+                               // Fallback options if placeholder 'title' isn't defined in master:
+                               // x: 0.5, y: 0.25, w: '90%', h: 0.75, fontSize: 32, bold: true, align: 'center',
+                               // color: '363636' // Example - color should ideally come from theme
+                           });
+                       }
+
+                       // Add Subtitle (optional)
+                       if (slideContent.subtitle) {
+                            // Masters often don't have a default 'subtitle' placeholder, so position manually
+                            // Adjust position (y) if title exists
+                            const subTitleY = slideContent.title ? 0.75 : 0.25; // Example positioning
+                            slide.addText(slideContent.subtitle, {
+                               x: 0.5, y: subTitleY, w:'90%', h: 0.5,
+                               fontSize: 20, align: 'center', //italic: true,
+                               // color: '6c6c6c' // Example - should come from theme
+                            });
+                       }
+
+                       // Add Bullet Points (adjust options based on theme master placeholders)
+                       if (slideContent.points && slideContent.points.length > 0) {
+                           slide.addText(slideContent.points, {
+                               placeholder: "body", // Use placeholder if defined in master
+                                // Fallback options if placeholder 'body' isn't defined in master:
+                                // x: 0.75, y: 1.5, w: '85%', h: 5.0,
+                                // fontSize: 18, bullet: { type: 'bullet' }, // or { indent: 36, type:'number' } etc.
+                                // color: '363636' // Example - should come from theme
+                           });
+                       }
+                   });
+
+                   // --- 6. Generate and Trigger Download ---
+                   const filename = `presentation-${selectedTheme.replace(/[^a-z0-9]/gi, '_')}.pptx`;
+                   pptx.writeFile({ fileName: filename })
+                       .then(fileName => {
+                           console.log(`PPTX generated: ${fileName}`);
+                           // Update UI - Success (Download is triggered automatically by writeFile)
+                           generationStatus.innerHTML = `<i class="fas fa-check-circle"></i> Success! Your download should start automatically.`;
+                           // You could briefly show the download area as confirmation if desired
+                           // downloadLink.download = fileName; // Update dummy link
+                           // downloadArea.classList.remove('hidden'); // Show the area
+                           setTimeout(() => { // Hide status message after a few seconds
+                               outputSection.classList.add('hidden');
+                           }, 4000);
+                       })
+                       .catch(err => {
+                           console.error(err);
+                           generationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error generating file: ${err.message || err}`;
+                           outputSection.classList.remove('hidden'); // Keep output section visible for error
+                           downloadArea.classList.add('hidden');
+                       })
+                       .finally(() => {
+                           // Re-enable button regardless of success/error after file write attempt
+                           generatePptBtn.disabled = false;
+                           generatePptBtn.innerHTML = '<i class="fas fa-cogs"></i> Generate PPT';
+                       });
+
+               } catch (error) {
+                   // Handle parsing errors or other synchronous errors
+                   console.error("Error during PPT generation setup:", error);
+                   generationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+                   outputSection.classList.remove('hidden'); // Keep output section visible for error
+                   downloadArea.classList.add('hidden');
+                   // Re-enable button on error
+                   generatePptBtn.disabled = false;
+                   generatePptBtn.innerHTML = '<i class="fas fa-cogs"></i> Generate PPT';
+               }
+           }); // End generatePptBtn click listener
+
+           // --- Helper Function: Parse Outline Text ---
+           function parsePresentationOutline(text) {
+               const slides = [];
+               const lines = text.split('\n');
+               let currentSlide = null;
+
+               lines.forEach(line => {
+                   line = line.trim();
+                   // Match "Slide X: Title Text" or "Slide X - Title Text"
+                   const slideMatch = line.match(/^Slide\s*(\d+)\s*[:\-]\s*(.*)/i);
+                   // Match "Title: Title Text" or "Subtitle: Subtitle Text"
+                   const titleDetailMatch = line.match(/^(Title|Subtitle)\s*[:\-]\s*(.*)/i);
+                   // Match lines starting with common bullet point markers
+                   const pointMatch = line.match(/^[\-\*\•\+]\s+(.*)/); // Added common bullet chars
+
+                   if (slideMatch) {
+                       if (currentSlide) slides.push(currentSlide); // Push previous slide
+                       currentSlide = {
+                           id: parseInt(slideMatch[1]),
+                           title: slideMatch[2].trim(),
+                           subtitle: null,
+                           points: []
+                       };
+                   } else if (currentSlide) {
+                       if (titleDetailMatch) {
+                            if (titleDetailMatch[1].toLowerCase() === 'title') {
+                                currentSlide.title = titleDetailMatch[2].trim();
+                            } else if (titleDetailMatch[1].toLowerCase() === 'subtitle') {
+                                currentSlide.subtitle = titleDetailMatch[2].trim();
+                            }
+                       } else if (pointMatch) {
+                           currentSlide.points.push(pointMatch[1].trim());
+                       } else if (line.length > 0 && !currentSlide.title) {
+                            // If title wasn't set on "Slide X:" line, assume first non-empty line is title
+                            currentSlide.title = line;
+                       } else if (line.length > 0) {
+                            // Treat other non-empty lines as points if they don't match other patterns
+                            currentSlide.points.push(line);
+                       }
+                   }
+               });
+
+               if (currentSlide) slides.push(currentSlide); // Push the last slide
+               return slides;
+           }
+
+
+           // --- Helper Function: Apply Theme / Define Masters ---
+            // Define master slide names for clarity
+            const MASTER_LIGHT = 'MASTER_LIGHT';
+            const MASTER_DARK = 'MASTER_DARK';
+            const MASTER_BLUE = 'MASTER_PROFESSIONAL_BLUE';
+            const MASTER_CREATIVE = 'MASTER_MODERN_CREATIVE'; // Assuming a name
+
+            function getMasterNameForTheme(themeName) {
+                switch(themeName) {
+                    case 'default-dark': return MASTER_DARK;
+                    case 'professional-blue': return MASTER_BLUE;
+                    case 'modern-creative': return MASTER_CREATIVE;
+                    case 'default-light':
+                    default: return MASTER_LIGHT;
+                }
+            }
+
+           function applyPresentationTheme(pptx, themeName) {
+                // Define common text options based on :root variables (approximate)
+                const lightText = '363636';
+                const darkText = 'E0E0E0'; // From --text-primary
+                const accentBlue = '4A90E2'; // From --accent-primary
+                const accentOrange = 'D35400'; // From --accent-secondary
+                const darkBg = '1E1E1E'; // From --bg-secondary
+                const font = 'Inter'; // From --font-family
+
+                // 1. Default Light Theme Master
+                pptx.defineSlideMaster({
+                   title: MASTER_LIGHT,
+                   background: { color: "FFFFFF" },
+                   objects: [
+                       { placeholder: { options: { name: "title", type: "title", x: 0.5, y: 0.25, w: 9, h: 1.0, color: lightText, fontSize: 36, bold: true, fontFace: font } } },
+                       { placeholder: { options: { name: "body", type: "body", x: 0.5, y: 1.5, w: 9, h: 5.25, color: lightText, fontSize: 18, fontFace: font, bullet: true } } },
+                   ],
+                });
+
+                // 2. Default Dark Theme Master
+                pptx.defineSlideMaster({
+                   title: MASTER_DARK,
+                   background: { color: darkBg },
+                   objects: [
+                       { placeholder: { options: { name: "title", type: "title", x: 0.5, y: 0.25, w: 9, h: 1.0, color: darkText, fontSize: 36, bold: true, fontFace: font } } },
+                       { placeholder: { options: { name: "body", type: "body", x: 0.5, y: 1.5, w: 9, h: 5.25, color: darkText, fontSize: 18, fontFace: font, bullet: true } } },
+                   ],
+                });
+
+                // 3. Professional Blue Theme Master
+                pptx.defineSlideMaster({
+                   title: MASTER_BLUE,
+                   background: { color: "F4F8FB" }, // Light background
+                   objects: [
+                       { rect: { x:0.0, y:0.0, w:'100%', h:0.75, fill: { color: accentBlue } } }, // Blue header bar
+                       { placeholder: { options: { name: "title", type: "title", x: 0.5, y: 0.1, w: 9, h: 0.6, color: "FFFFFF", fontSize: 32, bold: true, fontFace: font, align: 'center', valign: 'middle' } } }, // White title on bar
+                       { placeholder: { options: { name: "body", type: "body", x: 0.5, y: 1.2, w: 9, h: 5.5, color: lightText, fontSize: 18, fontFace: font, bullet: true } } },
+                   ],
+                });
+
+               // 4. Modern Creative Theme Master (Example)
+                pptx.defineSlideMaster({
+                   title: MASTER_CREATIVE,
+                   background: { color: "FFFFFF" }, // White background
+                   margin: [0.5, 0.25, 1.0, 0.25], // More margin
+                   objects: [
+                       // Thin accent line at top using accentOrange
+                       { line: { x: 0.5, y: 0.3, w: 9.0, h: 0, line: { color: accentOrange, width: 3 } } },
+                       { placeholder: { options: { name: "title", type: "title", x: 0.5, y: 0.5, w: 9, h: 1.0, color: accentOrange, fontSize: 34, bold: false, fontFace: font } } }, // Orange title, not bold
+                       { placeholder: { options: { name: "body", type: "body", x: 0.5, y: 1.75, w: 9, h: 4.75, color: lightText, fontSize: 17, fontFace: font, bullet: { type:'line', style:'-', color: accentBlue } } } }, // Custom bullet
+                        // Add a footer text?
+                        { text: { text:'AI Swag Generated', options: { x:0, y:'95%', w:'100%', align:'center', fontSize:10, color:'CCCCCC', fontFace: font } } }
+                   ],
+                });
+
+                // Set the default master based on the selected theme
+                pptx.layout = getMasterNameForTheme(themeName);
+           }
+
+       }); // End DOMContentLoaded
+</script>
+
+</body>
+</html>

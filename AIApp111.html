@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Ninja - Task Hub</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2;
+            --border-color: #3a3a3a;
+            --input-border-color: #555; /* Added for input */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+        }
+
+        .sidebar-section {
+            padding: 0 20px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-logo img {
+            height: 35px;
+            width: auto;
+        }
+        .sidebar-logo span {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+        }
+
+        .sidebar-nav li a, .sidebar-nav li button {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.95em;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+        }
+        .sidebar-nav li a i, .sidebar-nav li button i {
+            width: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-nav li a:hover, .sidebar-nav li button:hover {
+            background-color: var(--bg-tertiary);
+            color: #ffffff;
+        }
+        .sidebar-nav li a:hover i, .sidebar-nav li button:hover i {
+             color: var(--accent-primary);
+        }
+
+        .sidebar-divider {
+            border-top: 1px solid var(--border-color);
+            margin: 15px 20px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 0 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--accent-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .user-info span {
+            display: block;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .user-email {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .settings-button {
+             display: flex;
+             align-items: center;
+             gap: 15px;
+             padding: 10px 0;
+             color: var(--text-secondary);
+             text-decoration: none;
+             font-size: 0.95em;
+             border-radius: 6px;
+             transition: background-color 0.2s ease, color 0.2s ease;
+             width: 100%;
+             background: none;
+             border: none;
+             cursor: pointer;
+             text-align: left;
+             font-family: inherit;
+        }
+        .settings-button i {
+             width: 20px;
+             text-align: center;
+        }
+
+        .settings-button:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px; /* Add padding around content */
+            overflow-y: auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center direct children like main-header */
+        }
+
+        .main-header {
+            width: 100%;
+            max-width: 900px;
+            /* Removed margin-bottom: 30px; - Spacing handled internally now */
+            /* Removed text-align: center; - Use flex alignment */
+            /* --- Added Flexbox for centering children --- */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center search, h3, filters horizontally */
+            gap: 25px; /* Add space between header elements */
+            margin-bottom: 40px; /* Space below the entire header block */
+        }
+
+        /* --- Search Bar --- */
+        .search-bar {
+            width: 100%;
+            max-width: 700px; /* Slightly wider maybe */
+            /* Removed specific top/bottom margins, handled by header gap */
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px; /* Adjusted padding slightly */
+            border: 1px solid var(--input-border-color); /* Darker border */
+            border-radius: 8px;
+            font-size: 1em; /* Slightly larger font */
+            font-family: 'Inter', sans-serif; /* Match main font */
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: var(--bg-secondary); /* Match card background */
+            color: var(--text-primary); /* Light text */
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-secondary); /* Dimmer placeholder */
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-primary); /* Accent color on focus */
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3); /* Adjusted glow */
+            background-color: var(--bg-primary); /* Slightly change bg on focus */
+        }
+
+         /* --- Sub Heading --- */
+         .main-header h3 {
+             font-size: 1.1em; /* Adjusted size */
+             font-weight: 500;
+             color: var(--text-secondary);
+             margin: 0; /* Remove default margins, spacing handled by header gap */
+             /* text-align: center; is not needed, centered by parent flex */
+         }
+
+
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+             /* Removed margin-bottom: 40px; - handled by header gap/margin */
+            width: 100%; /* Ensure filters container takes width */
+        }
+
+        .filter-button {
+            padding: 8px 18px;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .filter-button:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .filter-button.active {
+            background-color: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* --- Task Grid --- */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto; /* Center grid within main content */
+        }
+
+        .task-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-color: #555;
+        }
+
+        .task-card-header {
+             display: flex;
+             align-items: center;
+             gap: 15px;
+        }
+
+        .task-icon-container {
+            width: 40px;
+            height: 40px;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .task-icon-container i {
+            color: var(--accent-primary);
+            font-size: 1.2em;
+        }
+         /* Specific icon colors */
+        .task-card[data-category="Asset"] .task-icon-container i { color: #28a745; }
+        .task-card[data-category="data"] .task-icon-container i { color: #ffc107; }
+        .task-card[data-category="custom"] .task-icon-container i { color: #6f42c1; }
+
+        .task-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .task-description {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-top: -5px;
+        }
+
+        .message {
+            margin-top: 30px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            min-height: 24px;
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Sidebar content remains the same -->
+        <div class="sidebar-section sidebar-logo">
+             <img src="logo.png" alt="AI Ninja Logo">
+             <span>AI Ninja</span>
+        </div>
+        <nav class="sidebar-nav sidebar-section">
+            <ul>
+                <li><button onclick="handleSidebarClick('New Chat')"><i class="fas fa-plus-circle fa-fw"></i> New Chat</button></li>
+                <li><button onclick="handleSidebarClick('Agents')"><i class="fas fa-robot fa-fw"></i> Agents</button></li>
+            </ul>
+        </nav>
+        <div class="sidebar-divider"></div>
+        <nav class="sidebar-nav sidebar-section">
+             <ul>
+                <li><button onclick="handleSidebarClick('Business')"><i class="fas fa-briefcase fa-fw"></i> Business</button></li>
+                <li><button onclick="handleSidebarClick('Download')"><i class="fas fa-download fa-fw"></i> Download</button></li>
+                <li><button onclick="handleSidebarClick('More')"><i class="fas fa-ellipsis-h fa-fw"></i> More</button></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-divider"></div>
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <span class="user-name">John Doe</span>
+                    <span class="user-email">john.doe@email.com</span>
+                </div>
+            </div>
+             <button class="settings-button" onclick="handleSidebarClick('Settings')">
+                 <i class="fas fa-cog fa-fw"></i> Settings
+             </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header now uses flexbox to center its children -->
+        <header class="main-header">
+
+             <div class="search-bar">
+			      <input type="text" id="taskInput" placeholder="Describe the task you want to accomplish..." />
+             </div>
+
+             <h3>Or choose a common task</h3>
+
+            <div class="category-filters">
+                <button class="filter-button active" data-filter="all" onclick="filterTasks('all', this)">All</button>
+                <button class="filter-button" data-filter="marketing" onclick="filterTasks('marketing', this)">Marketing</button>
+                <button class="filter-button" data-filter="sales" onclick="filterTasks('sales', this)">Sales</button>
+                <button class="filter-button" data-filter="data" onclick="filterTasks('data', this)">Data Analysis</button>
+                <button class="filter-button" data-filter="Asset" onclick="filterTasks('Asset', this)">Asset</button>
+                <button class="filter-button" data-filter="content" onclick="filterTasks('content', this)">Content</button>
+                <button class="filter-button" data-filter="product" onclick="filterTasks('product', this)">Product</button>
+                 <!-- Add more filters as needed -->
+            </div>
+        </header>
+
+        <!-- Task Grid remains the same -->
+        <div class="task-grid" id="taskGrid">
+            <div class="task-card" data-category="data" onclick="selectTask('Data Cleansing'); window.location.href='DataCleanse.html';">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-broom"></i></div>
+                    <h3 class="task-title">Cleanse Data</h3>
+                </div>
+                <p class="task-description">Standardize formats, remove duplicates, and handle missing values.</p>
+            </div>
+
+
+           <div class="task-card" data-category="it" onclick="selectTask('Network Analysis'); window.location.href='DocChat.html';">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-network-wired"></i></div>
+                    <h3 class="task-title">Chat with Documents</h3>
+                 </div>
+                <p class="task-description">Ask Questions and get answers about content in the document</p>
+            </div>
+            <div class="task-card" data-category="marketing content" onclick="selectTask('Slide Deck Generation'); window.location.href='Deck.html';">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-file-powerpoint"></i></div>
+                    <h3 class="task-title">Generate Slide Deck</h3>
+                 </div>
+                <p class="task-description">Create professional presentations from outlines or data points.</p>
+            </div>
+            <div class="task-card" data-category="data" onclick="selectTask('Document Analysis'); window.location.href='AnalyseDoc.html';">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-file-alt"></i></div>
+                    <h3 class="task-title">Analyse Documents</h3>
+                 </div>
+                <p class="task-description">Extract key information, summarize text, or analyze sentiment.</p>
+            </div>
+            <div class="task-card" data-category="content marketing" onclick="selectTask('Content Creation'); window.location.href='CreateContent.html';">
+                <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-pencil-alt"></i></div>
+                    <h3 class="task-title">Create Content</h3>
+                </div>
+                <p class="task-description">Generate blog posts, marketing copy, emails, and more.</p>
+            </div>
+            <div class="task-card" data-category="product sales" onclick="selectTask('Product Strategy'); window.location.href='Strategize.html';">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-lightbulb"></i></div>
+                    <h3 class="task-title">Strategize on Product</h3>
+                 </div>
+                <p class="task-description">Analyze market trends, competitor actions, and suggest features.</p>
+            </div>
+            <div class="task-card" data-category="marketing sales" onclick="selectTask('Marketing Assistance')">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-bullhorn"></i></div>
+                    <h3 class="task-title">Marketing Assistant</h3>
+                 </div>
+                <p class="task-description">Draft campaigns, analyze results, and suggest optimizations.</p>
+            </div>
+             <div class="task-card" data-category="Asset" onclick="selectTask('Asset Management'); window.location.href='PhysicalAsset.html';">
+			                 <div class="task-card-header">
+			                    <div class="task-icon-container"><i class="fas fa-box-archive"></i></div>
+			                    <h3 class="task-title">Manage Company Assets</h3>
+			                 </div>
+			                <p class="task-description">Track inventory, location, and maintenance schedules for assets.</p>
+            </div>
+             <div class="task-card" data-category="custom" onclick="selectTask('Build Your Own')">
+                 <div class="task-card-header">
+                    <div class="task-icon-container"><i class="fas fa-plus"></i></div>
+                    <h3 class="task-title">Build your own</h3>
+                 </div>
+                <p class="task-description">Create your own custom agent or workflow from scratch.</p>
+            </div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+    </main>
+
+    <!-- Script remains the same -->
+    <script>
+        const messageDiv = document.getElementById('message');
+        const taskGrid = document.getElementById('taskGrid');
+        const taskCards = taskGrid.querySelectorAll('.task-card');
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const taskInput = document.getElementById('taskInput'); // Added reference
+
+        function selectTask(taskName) {
+            messageDiv.textContent = `Selected Task: ${taskName}`;
+            console.log("Task selected:", taskName);
+        }
+
+        function handleSidebarClick(action) {
+             messageDiv.textContent = `Sidebar Action: ${action}`;
+             console.log("Sidebar action:", action);
+        }
+
+        function filterTasks(category, clickedButton) {
+            filterButtons.forEach(button => button.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            taskCards.forEach(card => {
+                const cardCategories = card.dataset.category.split(' ');
+                if (category === 'all' || cardCategories.includes(category)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update message only if needed, or remove if distracting
+            // messageDiv.textContent = `Filtered by: ${category === 'all' ? 'All' : category}`;
+        }
+
+         // Add event listener for the search input (optional, if you want Enter key functionality)
+         taskInput.addEventListener('keydown', function(e) {
+             if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+                 const task = taskInput.value.trim();
+                 messageDiv.textContent = `Initiating Task via Input: ${task}`;
+                 taskInput.value = ''; // Clear input
+                 console.log("Task entered via input:", task);
+                 e.preventDefault();
+                 // Here you would likely trigger a different flow than the cards
+             }
+         });
+
+
+        // Initialize view (show all tasks)
+        filterTasks('all', document.querySelector('.filter-button[data-filter="all"]'));
+
+    </script>
+
+</body>
+</html>

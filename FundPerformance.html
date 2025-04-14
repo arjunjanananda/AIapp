@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Fund Performance Reporter</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #00796b; /* Dark Teal/Green for finance reporting */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --card-border: #444;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .reporter-container {
+            max-width: 1100px; /* Good width for reports */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .reporter-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .reporter-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .reporter-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Step Section Styling --- */
+         .step-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+         .step-section h2 {
+             font-size: 1.3em;
+             font-weight: 600;
+             margin-bottom: 20px;
+             color: var(--text-primary);
+             border-bottom: 1px solid var(--border-light);
+             padding-bottom: 10px;
+              display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+          .step-section h2 .step-number {
+              background-color: var(--accent-secondary);
+              color: #fff;
+              border-radius: 50%;
+              width: 28px;
+              height: 28px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.8em;
+              font-weight: bold;
+          }
+
+        /* --- Params Grid & Form Groups --- */
+        .params-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Responsive grid */
+             gap: 20px;
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+             margin-bottom: 10px; /* Space below each group */
+         }
+         .form-group label {
+             margin-bottom: 6px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+          .form-group label i { margin-right: 5px; }
+         .form-group input[type="text"],
+         .form-group input[type="date"],
+         .form-group select,
+         .form-group textarea {
+             width: 100%;
+             padding: 10px 12px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea { min-height: 60px; resize: vertical; }
+          .form-group input:focus,
+          .form-group select:focus,
+          .form-group textarea:focus {
+              outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+           .form-group small { font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Checkbox options styling */
+        .options-group { margin-top: 10px; }
+        .options-list {
+             display: flex; flex-wrap: wrap; gap: 15px;
+        }
+         .options-list label { /* Individual checkbox label */
+            display: inline-flex; align-items: center; background-color: var(--bg-input); padding: 8px 12px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; transition: border-color 0.2s ease; font-size: 0.9em; font-weight: normal; color: var(--text-primary);
+        }
+         .options-list label:hover { border-color: var(--border-light); }
+         .options-list input[type="checkbox"] { margin-right: 8px; accent-color: var(--accent-secondary); width: 15px; height: 15px; }
+
+
+        /* --- Generate Button --- */
+         .generate-trigger-section {
+            text-align: center; padding-top: 15px; margin-bottom: 25px;
+         }
+          #generate-report-btn {
+            padding: 12px 35px; font-size: 1.1em; background-color: var(--accent-secondary); color: #fff; font-weight: 600;
+        }
+        #generate-report-btn:hover { background-color: #006054; } /* Darker teal */
+        #generate-report-btn:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+
+        /* --- Results Section --- */
+         #results-section { background-color: var(--bg-secondary); padding: 0; border: none; } /* Remove extra padding/border */
+         #results-section h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+         #results-section h2 .step-number { background-color: var(--accent-secondary); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; }
+
+
+         #report-status { text-align: center; margin-bottom: 25px; font-size: 1.1em; color: var(--accent-primary); padding: 15px; background-color: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-color); }
+         #report-status i { margin-right: 8px; }
+
+         #report-output { display: flex; flex-direction: column; gap: 25px; } /* Space between report blocks */
+
+         .report-block { background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; }
+         .report-block h3 { font-size: 1.2em; font-weight: 600; color: var(--accent-secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+         .report-block h3 i { font-size: 1.1em; }
+         .report-block .content p, .report-block .content ul { font-size: 0.95em; line-height: 1.6; color: var(--text-primary); margin-bottom: 10px; }
+         .report-block .content ul { list-style: disc; padding-left: 20px; }
+         .report-block .content li { margin-bottom: 8px; }
+         .report-block .content strong { color: var(--text-primary); font-weight: 600; }
+
+         /* Key Metrics Styling */
+         .key-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
+         .metric-item { background-color: var(--bg-input); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); }
+         .metric-label { display: block; font-size: 0.85em; color: var(--text-secondary); margin-bottom: 5px; font-weight: 500; }
+         .metric-value { display: block; font-size: 1.5em; font-weight: bold; color: var(--accent-secondary); }
+
+         /* Table Styling */
+         .report-table-container { max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 10px; }
+         .report-table { width: 100%; border-collapse: collapse; }
+         .report-table th, .report-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
+         .report-table th { background-color: var(--bg-input); font-weight: 600; position: sticky; top: 0; }
+         .report-table td:nth-child(n+2), .report-table th:nth-child(n+2) { text-align: right; } /* Right-align numeric */
+         .report-table tr:last-child td { border-bottom: none; }
+         .report-table tr:hover td { background-color: #333; }
+          .status-active { color: var(--success-color); }
+          .status-exited { color: var(--accent-primary); }
+          .status-watchlist { color: var(--warning-color); }
+
+
+         /* Download Area */
+          #download-area { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-light); }
+          #download-report-link { display: inline-block; padding: 10px 25px; background-color: var(--accent-primary); color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background-color 0.2s ease; }
+          #download-report-link i { margin-right: 8px; }
+          #download-report-link:hover { background-color: #3a7bc8; }
+
+
+        /* General Button Style */
+        .btn { padding: 9px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease; font-family: var(--font-family); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+        .btn i { margin-right: 8px; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="reporter-container">
+        <header class="reporter-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-chart-pie"></i> Fund Performance Reporter</h1>
+        </header>
+
+        <section id="params-section" class="step-section">
+             <h2><span class="step-number">1</span> Select Fund & Reporting Period</h2>
+             <div class="params-grid">
+                 <div class="form-group">
+                     <label for="fund-select"><i class="fas fa-university"></i> Fund Name*</label>
+                     <select id="fund-select">
+                        <option value="">Select Fund...</option>
+                        <!-- Assuming these are known funds -->
+                        <option value="fund-a-growth">AI Swag Growth Fund I</option>
+                        <option value="fund-b-venture">AI Swag Venture Fund II</option>
+                        <option value="fund-c-early">AI Swag Early Stage Fund</option>
+                     </select>
+                 </div>
+                  <div class="form-group">
+                     <label for="report-start-date"><i class="far fa-calendar-alt"></i> Report Start Date*</label>
+                     <input type="date" id="report-start-date">
+                 </div>
+                  <div class="form-group">
+                     <label for="report-end-date"><i class="far fa-calendar-check"></i> Report End Date*</label>
+                     <input type="date" id="report-end-date">
+                 </div>
+             </div>
+        </section>
+
+         <section id="options-section" class="step-section">
+             <h2><span class="step-number">2</span> Customize Report (Optional)</h2>
+              <div class="params-grid">
+                  <div class="form-group options-group" style="grid-column: 1 / -1;">
+                     <label><i class="fas fa-th-list"></i> Include Sections:</label>
+                     <div class="options-list">
+                        <label><input type="checkbox" name="report_section" value="summary" checked> Executive Summary</label>
+                        <label><input type="checkbox" name="report_section" value="metrics" checked> Key Metrics (IRR, MOIC, etc.)</label>
+                        <label><input type="checkbox" name="report_section" value="portfolio" checked> Portfolio Overview Table</label>
+                        <label><input type="checkbox" name="report_section" value="cashflow"> Cash Flow Summary</label>
+                        <label><input type="checkbox" name="report_section" value="commentary" checked> AI Commentary</label>
+                    </div>
+                 </div>
+                  <div class="form-group">
+                     <label for="benchmark-index"><i class="fas fa-chart-line"></i> Comparison Benchmark</label>
+                     <input type="text" id="benchmark-index" placeholder="e.g., S&P 500, Cambridge Associates VC Index">
+                 </div>
+                 <div class="form-group">
+                     <label for="highlight-companies"><i class="fas fa-star"></i> Portfolio Highlights</label>
+                     <input type="text" id="highlight-companies" placeholder="e.g., Company A (New Funding), Company B (Exit)">
+                     <small>Comma-separated company names for specific commentary.</small>
+                 </div>
+             </div>
+        </section>
+
+         <section id="generate-trigger-section" class="generate-trigger-section">
+            <button id="generate-report-btn" class="btn" disabled><i class="fas fa-cogs"></i> Generate Report</button>
+        </section>
+
+        <section id="results-section" class="step-section hidden">
+             <h2><span class="step-number">3</span> Generated Report</h2>
+             <div id="report-status" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Generating report using fund data and AI analysis...
+             </div>
+             <div id="report-output">
+                 <!-- Report blocks will be appended here by JS -->
+             </div>
+              <div id="download-area" class="hidden">
+                 <a href="#" id="download-report-link" download="Fund_Performance_Report.pdf">
+                    <i class="fas fa-file-download"></i> Download Full Report (PDF - Simulated)
+                </a>
+             </div>
+        </section>
+
+    </div> <!-- End reporter Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const fundSelect = document.getElementById('fund-select');
+            const startDateInput = document.getElementById('report-start-date');
+            const endDateInput = document.getElementById('report-end-date');
+            const reportSectionCheckboxes = document.querySelectorAll('input[name="report_section"]');
+            const benchmarkInput = document.getElementById('benchmark-index');
+            const highlightsInput = document.getElementById('highlight-companies');
+
+            const generateButton = document.getElementById('generate-report-btn');
+            const resultsSection = document.getElementById('results-section');
+            const reportStatus = document.getElementById('report-status');
+            const reportOutputContainer = document.getElementById('report-output');
+            const downloadArea = document.getElementById('download-area');
+            const downloadLink = document.getElementById('download-report-link');
+
+            // --- Functions ---
+
+            function checkIfReadyToGenerate() {
+                // Define required fields
+                const fundValue = fundSelect.value;
+                const startDateValue = startDateInput.value;
+                const endDateValue = endDateInput.value;
+
+                generateButton.disabled = !(fundValue && startDateValue && endDateValue);
+            }
+
+            function runReportGeneration() {
+                if (generateButton.disabled) return;
+
+                 // Capture parameters
+                 const reportParams = {
+                     fundId: fundSelect.value,
+                     fundName: fundSelect.options[fundSelect.selectedIndex].text, // Get selected text
+                     startDate: startDateInput.value,
+                     endDate: endDateInput.value,
+                     sections: Array.from(reportSectionCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
+                     benchmark: benchmarkInput.value.trim() || null,
+                     highlights: highlightsInput.value.trim() || null
+                 };
+
+                console.log("Generating Report with Parameters:", reportParams);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden');
+                reportStatus.classList.remove('hidden');
+                reportOutputContainer.innerHTML = ''; // Clear previous results
+                downloadArea.classList.add('hidden'); // Hide download initially
+                generateButton.disabled = true;
+                generateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                 // Optional: Disable inputs while generating
+                 document.querySelectorAll('.step-section input, .step-section select, .step-section textarea').forEach(el => el.disabled = true);
+
+                // --- *** SIMULATE BACKEND ANALYSIS (Gemini API Call + Data Retrieval) *** ---
+                // In a real app:
+                // 1. Send `reportParams` to your backend.
+                // 2. Backend identifies the fund (`fundId`) and retrieves relevant data for the period (`startDate`, `endDate`) from a fund accounting system or database. This data includes:
+                //    - Cash Flows (Calls & Distributions with dates)
+                //    - Portfolio Company Valuations at start and end dates (NAV).
+                //    - Investment Costs.
+                //    - Company metadata (name, industry, status).
+                // 3. Backend calculates core metrics:
+                //    - Net IRR (requires cash flow data & dates).
+                //    - MOIC (Multiple on Invested Capital = Total Value / Invested Capital).
+                //    - TVPI (Total Value to Paid-In = MOIC).
+                //    - DPI (Distributions to Paid-In).
+                //    - RVPI (Residual Value to Paid-In).
+                // 4. Backend prepares data & context for Gemini, including:
+                //    - Calculated metrics.
+                //    - Portfolio table data.
+                //    - Fund name, period, user-requested benchmark/highlights.
+                // 5. Prompt Gemini to generate specific sections requested in `reportParams.sections`, e.g.:
+                //    - "Write an executive summary for [Fund Name] covering the period [Start Date] to [End Date]. Key metrics are IRR: [X%], MOIC: [Yx]. Mention overall performance against [Benchmark or goals] and highlight activity related to [Highlighted Companies]."
+                //    - "Provide commentary on the portfolio status, noting key changes or events for companies like [Company A], [Company B]."
+                // 6. Receive structured results (JSON) from the backend containing calculated metrics and AI-generated text.
+
+                setTimeout(() => {
+                    reportStatus.classList.add('hidden');
+                    generateButton.disabled = false; // Re-enable button
+                    generateButton.innerHTML = '<i class="fas fa-cogs"></i> Generate Report';
+                     // Re-enable inputs if they were disabled
+                     document.querySelectorAll('.step-section input, .step-section select, .step-section textarea').forEach(el => el.disabled = false);
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    const simulatedData = getSimulatedReportData(reportParams);
+                    displayReport(simulatedData, reportParams.sections);
+                    downloadArea.classList.remove('hidden'); // Show download link
+                    // Update download link filename (optional)
+                    downloadLink.setAttribute('download', `Report_${reportParams.fundId}_${reportParams.endDate}.pdf`);
+
+
+                    console.log("Simulated report generation complete.");
+
+                }, 3000 + Math.random() * 1500); // Simulate generation time
+            }
+
+            function displayReport(data, includedSections) {
+                 reportOutputContainer.innerHTML = ''; // Clear just in case
+
+                 // Render sections based on user selection
+                 if (includedSections.includes('summary') && data.summary) {
+                     reportOutputContainer.innerHTML += createReportBlockHTML('summary', 'Executive Summary', 'fas fa-file-alt', `<p>${escapeHtml(data.summary)}</p>`);
+                 }
+
+                 if (includedSections.includes('metrics') && data.metrics) {
+                      reportOutputContainer.innerHTML += createMetricsBlockHTML('metrics', 'Key Performance Metrics', 'fas fa-tachometer-alt', data.metrics);
+                 }
+
+                 if (includedSections.includes('portfolio') && data.portfolio && data.portfolio.length > 0) {
+                      reportOutputContainer.innerHTML += createPortfolioTableHTML('portfolio', 'Portfolio Overview', 'fas fa-briefcase', data.portfolio);
+                 }
+
+                 if (includedSections.includes('cashflow') && data.cashFlow) {
+                       reportOutputContainer.innerHTML += createCashFlowHTML('cashflow', 'Cash Flow Summary (Simulated)', 'fas fa-exchange-alt', data.cashFlow);
+                 }
+
+                 if (includedSections.includes('commentary') && data.commentary) {
+                      reportOutputContainer.innerHTML += createReportBlockHTML('commentary', 'AI Commentary', 'fas fa-comment-dots', `<p>${escapeHtml(data.commentary)}</p>`);
+                 }
+            }
+
+            // Helper to create HTML for a standard report block
+            function createReportBlockHTML(typeClass, title, iconClass, contentHTML) {
+                 return `
+                    <div class="report-block ${typeClass}">
+                        <h3><i class="fas ${iconClass}"></i> ${escapeHtml(title)}</h3>
+                        <div class="content">${contentHTML}</div>
+                    </div>`;
+            }
+
+             // Helper to create HTML for the key metrics block
+             function createMetricsBlockHTML(typeClass, title, iconClass, metrics) {
+                 let metricsHTML = `
+                    <div class="key-metrics-grid">
+                        <div class="metric-item">
+                             <span class="metric-label">Net IRR</span>
+                             <span class="metric-value">${metrics.irr !== null ? metrics.irr.toFixed(1) + '%' : 'N/A'}</span>
+                        </div>
+                        <div class="metric-item">
+                             <span class="metric-label">MOIC / TVPI</span>
+                             <span class="metric-value">${metrics.moic !== null ? metrics.moic.toFixed(2) + 'x' : 'N/A'}</span>
+                        </div>
+                        <div class="metric-item">
+                             <span class="metric-label">DPI</span>
+                             <span class="metric-value">${metrics.dpi !== null ? metrics.dpi.toFixed(2) + 'x' : 'N/A'}</span>
+                        </div>
+                         <div class="metric-item">
+                             <span class="metric-label">RVPI</span>
+                             <span class="metric-value">${metrics.rvpi !== null ? metrics.rvpi.toFixed(2) + 'x' : 'N/A'}</span>
+                        </div>
+                    </div>
+                    ${metrics.benchmark ? `<p style="text-align:center; font-size:0.9em; margin-top:15px; color:var(--text-secondary);">Benchmark (${escapeHtml(metrics.benchmark.name)}): IRR ${metrics.benchmark.irr !== null ? metrics.benchmark.irr.toFixed(1) + '%' : 'N/A'}, MOIC ${metrics.benchmark.moic !== null ? metrics.benchmark.moic.toFixed(2) + 'x' : 'N/A'}</p>` : ''}
+                 `;
+                 return createReportBlockHTML(typeClass, title, iconClass, metricsHTML);
+             }
+
+            // Helper to create HTML specifically for the portfolio table
+             function createPortfolioTableHTML(typeClass, title, iconClass, portfolioData) {
+                 let tableRows = portfolioData.map(co => `
+                    <tr>
+                        <td>${escapeHtml(co.name)}</td>
+                        <td>${escapeHtml(co.industry)}</td>
+                        <td><span class="status-${co.status.toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(co.status)}</span></td>
+                        <td>${formatCurrency(co.cost)}</td>
+                        <td>${formatCurrency(co.value)}</td>
+                        <td>${co.multiple !== null ? co.multiple.toFixed(2)+'x' : 'N/A'}</td>
+                    </tr>`).join('');
+
+                 let tableHTML = `
+                     <div class="report-table-container">
+                         <table class="report-table">
+                             <thead>
+                                 <tr>
+                                     <th>Company</th>
+                                     <th>Industry</th>
+                                     <th>Status</th>
+                                     <th>Invested Cost</th>
+                                     <th>Current Value (NAV)</th>
+                                     <th>Implied Multiple</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 ${tableRows}
+                             </tbody>
+                         </table>
+                     </div>
+                 `;
+                 return createReportBlockHTML(typeClass, title, iconClass, tableHTML);
+             }
+
+            // Helper for simulated cash flow
+             function createCashFlowHTML(typeClass, title, iconClass, cashFlow) {
+                 let contentHTML = `
+                     <ul style="list-style:none; padding-left:0;">
+                         <li><strong>Total Capital Called:</strong> ${formatCurrency(cashFlow.called)}</li>
+                         <li><strong>Total Distributions:</strong> ${formatCurrency(cashFlow.distributed)}</li>
+                         <li><strong>Net Cash Flow:</strong> ${formatCurrency(cashFlow.distributed - cashFlow.called)}</li>
+                     </ul>
+                     <p style="font-size:0.9em; color:var(--text-secondary); margin-top:10px;">(Note: Detailed cash flow schedule typically provided in appendix or full report.)</p>
+                 `;
+                  return createReportBlockHTML(typeClass, title, iconClass, contentHTML);
+             }
+
+
+            function getSimulatedReportData(params) {
+                // Generate dummy data based on params
+                const baseIrr = 15 + Math.random() * 15; // IRR between 15% and 30%
+                const baseMoic = 1.5 + Math.random() * 1.5; // MOIC between 1.5x and 3.0x
+                const distributionFactor = 0.2 + Math.random() * 0.6; // DPI between 0.2x and 0.8x of MOIC
+
+                const data = {
+                    summary: `For the period ${params.startDate} to ${params.endDate}, ${params.fundName} demonstrated solid performance. Key drivers included [mention simulated positive event, e.g., successful exit of Company X, strong growth in SaaS portfolio]. Performance was [slightly above/in line with/slightly below] the specified benchmark (${params.benchmark || 'general market trends'}). ${params.highlights ? `Specific updates on ${params.highlights} contributed positively.` : ''}`,
+                    metrics: {
+                        irr: baseIrr,
+                        moic: baseMoic,
+                        dpi: baseMoic * distributionFactor,
+                        rvpi: baseMoic * (1 - distributionFactor),
+                        benchmark: params.benchmark ? { name: params.benchmark, irr: baseIrr * (0.8 + Math.random()*0.4) , moic: baseMoic * (0.8 + Math.random()*0.4)} : null // Simulate benchmark slightly different
+                    },
+                    portfolio: [],
+                    cashFlow: {
+                        called: 10000000 + Math.random() * 5000000, // Example $10-15M called
+                        distributed: (10000000 + Math.random() * 5000000) * baseMoic * distributionFactor // Distributed based on called and DPI
+                    },
+                    commentary: `AI analysis indicates the portfolio is generally healthy, weighted towards the [Dominant Industry, e.g., 'SaaS'] sector. The calculated IRR of ${baseIrr.toFixed(1)}% is [Strong/Good/Moderate] for a fund of this vintage and focus. Key value creation is currently driven by [Company A] and [Company B]. Monitor [Company C] closely due to [Potential Minor Issue]. Overall trajectory aligns with fund objectives.`
+                };
+
+                 // Simulate portfolio companies
+                 const numCompanies = 8 + Math.floor(Math.random() * 5); // 8-12 companies
+                 const statuses = ['Active', 'Active', 'Active', 'Active', 'Watchlist', 'Exited'];
+                 let totalValue = 0;
+                 let totalCost = 0;
+                 for (let i = 0; i < numCompanies; i++) {
+                      const cost = 500000 + Math.random() * 1500000;
+                      const multiple = 0.5 + Math.random() * 4; // Multiple 0.5x to 4.5x
+                      const value = cost * multiple;
+                      const status = statuses[Math.floor(Math.random() * statuses.length)];
+                      data.portfolio.push({
+                           name: `Portfolio Co ${String.fromCharCode(65 + i)}`,
+                           industry: ['SaaS', 'FinTech', 'HealthTech', 'DeepTech'][i%4],
+                           status: status === 'Exited' && Math.random() > 0.5 ? 'Active' : status, // Make exit less common
+                           cost: cost,
+                           value: (status === 'Exited' ? cost * multiple * 0.8 : value), // Exited value might be realized dist.
+                           multiple: multiple
+                      });
+                      totalCost += cost;
+                      totalValue += (status === 'Exited' ? cost * multiple * 0.8 : value); // Adjust total value calc
+                 }
+                 // Adjust overall MOIC slightly based on simulated portfolio
+                 data.metrics.moic = totalValue / totalCost;
+                 data.metrics.dpi = data.metrics.moic * distributionFactor;
+                 data.metrics.rvpi = data.metrics.moic * (1 - distributionFactor);
+
+
+                return data;
+            }
+
+            // --- Utility Functions ---
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const div = document.createElement('div');
+                 div.textContent = String(unsafe);
+                 return div.innerHTML;
+             }
+             function formatBytes(bytes, decimals = 2) { /* Keep for consistency */
+                 if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+             }
+             function formatDate(dateString) { // Simple YYYY-MM-DD formatter
+                 if (!dateString) return 'N/A';
+                 try {
+                     const date = new Date(dateString);
+                     // Add timezone offset to avoid date shifting
+                     const offset = date.getTimezoneOffset();
+                     const adjustedDate = new Date(date.getTime() - (offset*60*1000));
+                     return adjustedDate.toISOString().split('T')[0];
+                 } catch (e) {
+                     return dateString; // Return original if parsing fails
+                 }
+             }
+              function formatCurrency(value) {
+                 if (value === null || typeof value === 'undefined') return 'N/A';
+                 // Simple formatting, adapt as needed for locale/precision
+                 return '$' + Math.round(value).toLocaleString();
+             }
+
+
+            // --- Initial Setup ---
+             checkIfReadyToGenerate(); // Initial button state check
+             resultsSection.classList.add('hidden'); // Ensure results are hidden initially
+
+             // Set default dates (e.g., last quarter end and start) - Adjust logic as needed
+             const today = new Date();
+             const currentQuarter = Math.floor(today.getMonth() / 3); // 0, 1, 2, 3
+             const lastQuarterEndDate = new Date(today.getFullYear(), currentQuarter * 3, 0); // Day 0 gives last day of previous month
+             const lastQuarterStartDate = new Date(lastQuarterEndDate.getFullYear(), lastQuarterEndDate.getMonth() - 2, 1); // First day, 2 months prior
+
+             // Pre-fill dates, handle potential errors if using server-side rendering/different locale
+             try {
+                 endDateInput.value = lastQuarterEndDate.toISOString().split('T')[0];
+                 startDateInput.value = lastQuarterStartDate.toISOString().split('T')[0];
+                 checkIfReadyToGenerate(); // Check again after setting dates
+             } catch(e) {
+                 console.error("Error setting default dates:", e);
+             }
+
+
+             // Event Listeners
+             [fundSelect, startDateInput, endDateInput].forEach(el => {
+                  el.addEventListener('input', checkIfReadyToGenerate);
+                  if (el.tagName === 'SELECT' || el.type === 'date') { // Date inputs use 'change'
+                      el.addEventListener('change', checkIfReadyToGenerate);
+                  }
+             });
+             generateButton.addEventListener('click', runReportGeneration);
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Swag - Task Selector</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome CDN (replace with your kit if you have one) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif; /* Use imported font */
+      /* Subtle gradient background */
+      background: linear-gradient(to bottom, #f0f4f8, #ffffff);
+      /* Fallback solid color: background: #f8f9fa; */
+      text-align: center;
+      color: #333; /* Darker text for better contrast */
+      min-height: 100vh; /* Ensure gradient covers full height */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 960px; /* Control max width */
+      margin: 0 auto; /* Center the container */
+      padding: 0 20px; /* Side padding */
+      flex-grow: 1; /* Allow container to grow */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center items within container */
+    }
+
+    .logo-container {
+      padding: 40px 0 20px;
+    }
+
+    .logo {
+      height: 150px; /* Adjusted size slightly */
+      max-height: 150px;
+      width: auto;
+    }
+
+    .search-bar {
+      margin: 30px 0 25px; /* Adjusted margins */
+      width: 100%; /* Take full width of container */
+      max-width: 600px; /* Limit max width of search bar itself */
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px; /* Consistent radius */
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif; /* Ensure input uses the font */
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .search-bar input::placeholder {
+        color: #888;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: #007bff; /* Brand color on focus */
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Glow effect */
+    }
+
+    h2 {
+      margin: 35px 0 25px; /* Adjusted margins */
+      font-weight: 600;
+      color: #2a2a2a;
+    }
+
+    .task-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px; /* Spacing between buttons */
+      padding: 0 10px 40px; /* Reduced horizontal padding slightly */
+      width: 100%;
+      max-width: 800px; /* Limit width of the grid */
+    }
+
+    .task-button {
+      background-color: #3a3b3c; /* Primary brand color */
+      color: white;
+      padding: 12px 20px; /* Adjusted padding */
+      border: none;
+      border-radius: 8px; /* Consistent radius */
+      font-size: 15px; /* Slightly smaller font for buttons */
+      font-family: 'Poppins', sans-serif; /* Ensure buttons use the font */
+      cursor: pointer;
+      min-width: 190px; /* Ensure buttons have enough width */
+      text-align: left; /* Align text/icon left */
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex; /* Use flexbox for icon alignment */
+      align-items: center; /* Vertically center icon and text */
+    }
+
+    .task-button i {
+      margin-right: 10px; /* Space between icon and text */
+      width: 1.2em; /* Fixed width for icon container */
+      text-align: center;
+    }
+
+
+    .task-button:hover {
+      background-color: #0056b3; /* Darker shade on hover */
+      transform: translateY(-2px); /* Slight lift effect */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+    }
+
+    /* --- Specific Task Button Colors (Optional Examples) ---
+    .task-button.data { background-color: #17a2b8; }
+    .task-button.data:hover { background-color: #117a8b; }
+    .task-button.content { background-color: #28a745; }
+    .task-button.content:hover { background-color: #1e7e34; }
+    --------------------------------------------------------- */
+
+
+    .message {
+      margin-top: 30px;
+      margin-bottom: 30px; /* Add some bottom margin */
+      font-weight: 600;
+      color: #0056b3; /* Use a darker brand color for message */
+      min-height: 24px; /* Reserve space for the message */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="logo-container">
+      <!-- Make sure you have a logo.png file in the same directory -->
+      <!-- or replace src with a full URL -->
+      <img src="logo.png" alt="AI Swag Logo" class="logo" />
+      <!-- Optional Tagline -->
+      <!-- <p style="margin-top: 5px; color: #555;">Automate Your Workflow Intelligently</p> -->
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="taskInput" placeholder="Describe the task you want to accomplish..." />
+    </div>
+
+    <h2>Or choose a common task:</h2>
+
+    <div class="task-grid">
+      <!-- Add relevant Font Awesome icons -->
+      <button class="task-button data" onclick="selectTask('Data Cleansing')">
+        <i class="fas fa-broom fa-fw"></i> Cleanse Data
+      </button>
+      <button class="task-button" onclick="selectTask('Asset Management')">
+        <i class="fas fa-box-archive fa-fw"></i> Manage Physical Assets
+      </button>
+      <button class="task-button" onclick="selectTask('Enterprise Network Analysis')">
+        <i class="fas fa-network-wired fa-fw"></i> Analyze Network
+      </button>
+      <button class="task-button content" onclick="selectTask('Slide Deck Generation')">
+        <i class="fas fa-file-powerpoint fa-fw"></i> Generate Slide Deck
+      </button>
+      <button class="task-button" onclick="selectTask('Document Analysis')">
+        <i class="fas fa-file-alt fa-fw"></i> Analyse Documents
+      </button>
+      <button class="task-button content" onclick="selectTask('Content Creation')">
+        <i class="fas fa-pencil-alt fa-fw"></i> Create Content
+      </button>
+      <button class="task-button" onclick="selectTask('Product Strategy')">
+        <i class="fas fa-lightbulb fa-fw"></i> Strategize on Product
+      </button>
+      <button class="task-button" onclick="selectTask('Marketing Assistance')">
+        <i class="fas fa-bullhorn fa-fw"></i> Marketing Assistant
+      </button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+  </div> <!-- End Container -->
+
+  <script>
+    const taskInput = document.getElementById('taskInput');
+    const messageDiv = document.getElementById('message');
+
+    function selectTask(task) {
+      // Display the selected task
+      messageDiv.textContent = `Selected Task: ${task}`;
+      // Optionally clear the input field
+      taskInput.value = '';
+      // Here you would typically trigger the next step for the selected task
+      console.log("Task selected:", task);
+    }
+
+    taskInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+        const task = taskInput.value.trim();
+        // Display the entered task
+        messageDiv.textContent = `Initiating Task: ${task}`;
+        // Clear the input field
+        taskInput.value = '';
+        // Here you would typically trigger the next step for the entered task
+        console.log("Task entered:", task);
+
+        e.preventDefault(); // Prevent potential form submission if it were in a form
+      }
+    });
+  </script>
+
+</body>
+</html>

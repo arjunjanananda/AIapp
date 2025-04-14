@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Pitch Deck Analyzer</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #16a085; /* Teal for analysis/investment */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .analyzer-container {
+            max-width: 1000px; /* Good width */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .analyzer-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .analyzer-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .analyzer-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Input Section --- */
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            background-color: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+         .input-section h2 {
+             grid-column: 1 / -1; /* Span full width */
+             font-size: 1.2em;
+             font-weight: 500;
+             margin-bottom: 0; /* Reduced margin */
+             color: var(--text-primary);
+             border-bottom: 1px solid var(--border-light);
+             padding-bottom: 10px;
+         }
+
+        /* File Upload Area */
+        .file-upload-area {} /* Container div */
+
+         .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 15px; /* Space below upload area */
+            background-color: var(--bg-input); /* Slightly different bg */
+        }
+        .upload-area:hover {
+            background-color: rgba(22, 160, 133, 0.1); /* Use accent color */
+            border-color: var(--accent-secondary);
+        }
+        .upload-area i {
+            font-size: 2.5em;
+            color: var(--accent-secondary);
+            margin-bottom: 10px;
+        }
+        .upload-area p {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+        .upload-area span {
+            color: var(--accent-secondary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+         .upload-area small {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            display: block;
+            margin-top: 8px;
+        }
+         .file-info {
+            padding: 8px 12px;
+            background-color: rgba(22, 160, 133, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* Investment Thesis Area */
+        .thesis-area {} /* Container div */
+        .thesis-area h3 {
+             font-size: 1.1em;
+             font-weight: 500;
+             margin-bottom: 15px;
+             color: var(--text-primary);
+        }
+
+         .form-group {
+             margin-bottom: 15px;
+         }
+         .form-group label {
+             display: block;
+             margin-bottom: 5px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+         .form-group input[type="text"],
+         .form-group textarea {
+             width: 100%;
+             padding: 10px 12px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea {
+             min-height: 60px; /* Slightly more height */
+             resize: vertical;
+         }
+          .form-group input:focus,
+          .form-group textarea:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+              box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+
+         /* --- Analyze Button --- */
+         .analyze-trigger-section {
+            text-align: center;
+            padding: 15px 0; /* Space around button */
+             margin-bottom: 25px;
+         }
+          #analyze-button {
+            padding: 12px 30px; /* Larger button */
+            font-size: 1.1em;
+            background-color: var(--accent-secondary); /* Use accent color */
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+        #analyze-button:hover {
+             background-color: #117a65; /* Darker teal */
+        }
+         #analyze-button:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+             background-color: var(--bg-tertiary);
+             color: var(--text-secondary);
+             border: 1px solid var(--border-color);
+         }
+
+
+        /* --- Results Section --- */
+         #results-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+         }
+         #results-section h2 {
+            font-size: 1.4em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+         }
+
+         #analysis-status {
+             text-align: center;
+             margin-bottom: 20px;
+             font-size: 1.1em;
+             color: var(--accent-primary);
+         }
+         #analysis-status i {
+              margin-right: 8px;
+         }
+
+         .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; /* Space between result blocks */
+         }
+
+         .result-block {
+            background-color: var(--bg-input);
+            padding: 15px 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+         }
+          .result-block h3 {
+            font-size: 1.1em;
+            font-weight: 600; /* Bolder titles */
+            color: var(--accent-secondary); /* Use accent color for titles */
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+         }
+         .result-block h3 i {
+             font-size: 1.1em; /* Match title size */
+         }
+          .result-block div, .result-block p { /* Content inside block */
+             font-size: 0.95em;
+             line-height: 1.6;
+             color: var(--text-primary);
+         }
+          .result-block ul {
+             list-style: disc;
+             padding-left: 20px;
+             margin: 10px 0;
+         }
+         .result-block li {
+             margin-bottom: 5px;
+         }
+          .result-block strong { /* Highlight key terms/scores */
+             color: var(--text-primary);
+             font-weight: 600;
+         }
+
+         /* Specific Result Block Styles */
+          .overall-score {
+             grid-column: 1 / -1; /* Span full width */
+             text-align: center;
+             background-color: var(--bg-tertiary); /* Slightly different bg */
+          }
+          .overall-score h3 {
+             justify-content: center;
+          }
+           .overall-score .score-value {
+              font-size: 1.8em;
+              font-weight: bold;
+              color: var(--accent-secondary);
+              display: block;
+              margin: 5px 0;
+          }
+          .overall-score .score-label {
+               font-size: 0.9em;
+               color: var(--text-secondary);
+          }
+
+        /* --- General Button Styles --- */
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        /* Add other .btn- styles if needed */
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="analyzer-container">
+        <header class="analyzer-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-search-dollar"></i> Pitch Deck Analyzer</h1>
+        </header>
+
+        <section class="input-section">
+            <h2>1. Upload Deck & Define Thesis</h2>
+            <div class="file-upload-area">
+                 <h3>Upload Pitch Deck</h3>
+                 <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-upload-input" accept=".pdf,.ppt,.pptx" hidden/> <!-- Accept common deck types -->
+                    <label for="file-upload-input">
+                        <i class="fas fa-file-powerpoint"></i>
+                        <p>Drag & Drop deck file here</p>
+                        <p>or <span>Browse Files</span></p>
+                        <small>(Supports: PDF, PPT, PPTX)</small>
+                    </label>
+                </div>
+                 <div id="file-info" class="file-info hidden">
+                    File Selected: <strong id="loaded-file-name"></strong> (<span id="loaded-file-size"></span>)
+                </div>
+            </div>
+
+            <div class="thesis-area">
+                <h3>Your Investment Thesis</h3>
+                 <div class="form-group">
+                    <label for="thesis-focus">Core Focus (Industry, Stage, Problem)*</label>
+                    <textarea id="thesis-focus" rows="3" placeholder="e.g., Early-stage (Seed/Series A) B2B SaaS solving workflow automation challenges in regulated industries."></textarea>
+                </div>
+                 <div class="form-group">
+                    <label for="thesis-criteria">Key Evaluation Criteria*</label>
+                    <textarea id="thesis-criteria" rows="4" placeholder="e.g., Strong founding team with relevant experience, Large addressable market (>$1B TAM), Clear path to profitability, Defensible technology or unique GTM strategy, Evidence of product-market fit (early traction)."></textarea>
+                </div>
+                 <div class="form-group">
+                    <label for="thesis-dealbreakers">Deal Breakers (Optional)</label>
+                    <textarea id="thesis-dealbreakers" rows="2" placeholder="e.g., No clear monetization strategy, Overly competitive / 'red ocean' market, Unrealistic valuation expectations."></textarea>
+                </div>
+            </div>
+        </section>
+
+         <section id="analyze-trigger-section" class="analyzer-section analyze-trigger-section">
+            <button id="analyze-button" class="btn" disabled><i class="fas fa-flask-vial"></i> Analyze Pitch Deck</button>
+        </section>
+
+        <section id="results-section" class="analyzer-section hidden">
+             <h2>Analysis Results</h2>
+             <div id="analysis-status" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Analyzing deck against thesis... Please wait.
+             </div>
+             <div id="results-container" class="results-grid">
+                 <!-- Results will be appended here by JS -->
+             </div>
+        </section>
+
+    </div> <!-- End Analyzer Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileInfoDiv = document.getElementById('file-info');
+            const loadedFileName = document.getElementById('loaded-file-name');
+            const loadedFileSize = document.getElementById('loaded-file-size');
+
+            const thesisFocusInput = document.getElementById('thesis-focus');
+            const thesisCriteriaInput = document.getElementById('thesis-criteria');
+            const thesisDealbreakersInput = document.getElementById('thesis-dealbreakers'); // Optional field
+
+            const analyzeButton = document.getElementById('analyze-button');
+            const resultsSection = document.getElementById('results-section');
+            const analysisStatus = document.getElementById('analysis-status');
+            const resultsContainer = document.getElementById('results-container');
+
+            let selectedFile = null; // Store the File object
+            let investmentThesis = {}; // Store thesis details
+
+            // --- Event Listeners ---
+
+            // File Input Handling
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--accent-secondary)';
+                uploadArea.style.backgroundColor = 'rgba(22, 160, 133, 0.05)';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'var(--bg-input)';
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'var(--bg-input)';
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+             // Enable Analyze button check on thesis input
+             [thesisFocusInput, thesisCriteriaInput].forEach(input => {
+                 input.addEventListener('input', checkIfReadyToAnalyze);
+             });
+
+            // Analyze Button Click
+            analyzeButton.addEventListener('click', runAnalysis);
+
+            // --- Functions ---
+
+            function handleFile(file) {
+                // Basic validation (can add more specific types if needed)
+                // Note: PPT/PPTX MIME types can be tricky
+                const allowedExtensions = /(\.pdf|\.ppt|\.pptx)$/i;
+                if (!allowedExtensions.exec(file.name)) {
+                   alert('Unsupported file type. Please upload PDF, PPT, or PPTX.');
+                   return;
+                 }
+
+                selectedFile = file;
+
+                // Display file info
+                loadedFileName.textContent = file.name;
+                loadedFileSize.textContent = formatBytes(file.size);
+                fileInfoDiv.classList.remove('hidden');
+
+                checkIfReadyToAnalyze(); // Check if button should be enabled now
+            }
+
+            function checkIfReadyToAnalyze() {
+                const focusText = thesisFocusInput.value.trim();
+                const criteriaText = thesisCriteriaInput.value.trim();
+                // Enable button only if file selected AND required thesis fields are filled
+                analyzeButton.disabled = !(selectedFile && focusText && criteriaText);
+            }
+
+            function runAnalysis() {
+                if (!selectedFile || analyzeButton.disabled) return;
+
+                 // Capture thesis at the time of analysis
+                 investmentThesis = {
+                     focus: thesisFocusInput.value.trim(),
+                     criteria: thesisCriteriaInput.value.trim(),
+                     dealbreakers: thesisDealbreakersInput.value.trim() || null // Store null if empty
+                 };
+
+                console.log("Analyzing deck:", selectedFile.name);
+                console.log("Using Investment Thesis:", investmentThesis);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden');
+                analysisStatus.classList.remove('hidden');
+                resultsContainer.innerHTML = ''; // Clear previous results
+                analyzeButton.disabled = true;
+                analyzeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+                // --- *** SIMULATE BACKEND ANALYSIS (Gemini API Call) *** ---
+                // In a real app:
+                // 1. Upload `selectedFile` to your backend (or process locally if secure/small).
+                // 2. Send the extracted deck content (or file reference) AND `investmentThesis` object to the backend.
+                // 3. Backend prepares a detailed prompt for Gemini, asking it to evaluate the deck
+                //    content against the specific thesis criteria. Prompt engineering is key here!
+                //    Example prompt structure:
+                //    "Analyze the following pitch deck content based on this investment thesis:
+                //     Thesis Focus: [focus text]
+                //     Key Criteria: [criteria text]
+                //     Deal Breakers: [dealbreakers text or 'None']
+                //     --- Pitch Deck Content ---
+                //     [Extracted text from slides]
+                //     --- Analysis Request ---
+                //     Provide feedback on:
+                //     1. Overall Score (1-10) and Readiness Level (e.g., Needs Work, Promising, Investment Ready).
+                //     2. Structure & Flow: [Evaluate coherence, story]
+                //     3. Content Clarity: [Evaluate value prop, problem/solution]
+                //     4. Market Analysis: [Evaluate TAM/SAM/SOM presentation]
+                //     5. Team: [Evaluate team slide strength]
+                //     6. Financials: [Evaluate projection clarity/realism]
+                //     7. Alignment with Thesis: [Specifically compare deck points against user's criteria/focus]
+                //     8. Suggestions for Improvement: [Actionable recommendations]"
+                // 4. Receive the structured analysis results from the backend (ideally as JSON).
+
+                setTimeout(() => {
+                    analysisStatus.classList.add('hidden');
+                    analyzeButton.disabled = false;
+                    analyzeButton.innerHTML = '<i class="fas fa-flask-vial"></i> Analyze Pitch Deck';
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    displaySimulatedResults(investmentThesis);
+
+                    console.log("Simulated analysis complete.");
+
+                }, 3000 + Math.random() * 1500); // Simulate longer analysis time
+            }
+
+            function displaySimulatedResults(thesis) {
+                 resultsContainer.innerHTML = ''; // Clear just in case
+
+                 // Simulate scores/levels based on thesis length (crude)
+                 const score = 6 + Math.floor(thesis.criteria.length / 50); // Score between 6-10 approx
+                 let readiness = "Promising";
+                 if (score < 7) readiness = "Needs Work";
+                 if (score > 8) readiness = "Investment Ready";
+
+                 // Overall Score
+                 resultsContainer.innerHTML += `
+                    <div class="result-block overall-score">
+                        <h3><i class="fas fa-tachometer-alt"></i> Overall Readiness</h3>
+                        <span class="score-value">${score}/10</span>
+                        <span class="score-label">${readiness}</span>
+                    </div>`;
+
+                 // Structure & Flow
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-stream"></i> Structure & Flow</h3>
+                        <p>The deck follows a relatively standard structure. The narrative arc is mostly clear, starting with the problem and moving to the solution. However, the transition between the market size and the go-to-market strategy could be smoother.</p>
+                        <ul>
+                            <li>Consider adding a dedicated slide for the 'Ask'.</li>
+                            <li>The story builds okay, but could be more compelling.</li>
+                        </ul>
+                    </div>`;
+
+                 // Content Clarity
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-bullhorn"></i> Content Clarity</h3>
+                        <p>The value proposition is stated but could be sharper and more benefit-oriented for the target audience (${escapeHtml(thesis.audience)}). The problem description is clear, but the uniqueness of the solution needs more emphasis. Avoid jargon where possible.</p>
+                    </div>`;
+
+                 // Alignment with Thesis
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-check-double"></i> Alignment with Your Thesis</h3>
+                        <p><strong>Alignment with Focus:</strong> The product aligns reasonably well with your focus on "${escapeHtml(thesis.focus.substring(0,50))}...".</p>
+                        <p><strong>Criteria Match:</strong></p>
+                        <ul>
+                            <li>Team: Seems capable, but needs more detail on specific experience relevant to your criteria: "<em>${escapeHtml(thesis.criteria.split(',')[0] || 'First criterion')}</em>".</li>
+                            <li>Market Size: Addresses a decent market, potentially meeting your ">$1B TAM" criterion, but validation is needed.</li>
+                            <li>PMF: Early signs shown, but more concrete evidence is needed to satisfy: "<em>${escapeHtml(thesis.criteria.split(',').pop() || 'Last criterion')}</em>".</li>
+                        </ul>
+                        <p><strong>Deal Breakers:</strong> No obvious deal breakers identified based on "<em>${escapeHtml(thesis.dealbreakers || 'None specified')}</em>".</p>
+                    </div>`;
+
+                 // Market Analysis
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-chart-pie"></i> Market Analysis</h3>
+                        <p>TAM, SAM, and SOM are presented, but the methodology for calculating them could be clearer. The analysis of market trends seems adequate but lacks depth regarding potential disruptors.</p>
+                    </div>`;
+
+                 // Team
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-users"></i> Team</h3>
+                        <p>The team slide introduces key members. Highlighting specific, relevant accomplishments or domain expertise would strengthen this section further, especially concerning your criteria.</p>
+                    </div>`;
+
+                 // Financials
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-dollar-sign"></i> Financials / Projections</h3>
+                        <p>Basic financial projections are included (e.g., 3-year revenue forecast). Assumptions behind the projections should be explicitly stated. Key metrics like CAC and LTV are missing or unclear.</p>
+                    </div>`;
+
+                 // Suggestions
+                 resultsContainer.innerHTML += `
+                    <div class="result-block">
+                        <h3><i class="fas fa-lightbulb"></i> Suggestions for Improvement</h3>
+                        <ul>
+                            <li>Sharpen the value proposition and quantify benefits.</li>
+                            <li>Clearly state the 'Ask' and use of funds.</li>
+                            <li>Provide more evidence of traction or product-market fit.</li>
+                            <li>Strengthen the competitive analysis with clear differentiators.</li>
+                            <li>Detail assumptions behind financial projections.</li>
+                             <li>Tailor the team's experience more directly to the points mentioned in your investment criteria.</li>
+                        </ul>
+                    </div>`;
+            }
+
+            // --- Utility Functions ---
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const text = String(unsafe);
+                 const div = document.createElement('div');
+                 div.textContent = text;
+                 return div.innerHTML; // Use browser's escaping
+             }
+
+            // --- Initial State ---
+             checkIfReadyToAnalyze(); // Initial button state check
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

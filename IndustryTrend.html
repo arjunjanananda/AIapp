@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Industry Trend Scout</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #00bcd4; /* Cyan for trends/scouting */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --card-border: #444;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .scout-container {
+            max-width: 1100px; /* Good width */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .scout-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .scout-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .scout-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Criteria Section --- */
+        .criteria-section {
+            background-color: var(--bg-tertiary);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+         .criteria-section h2 {
+             font-size: 1.3em;
+             font-weight: 600;
+             margin-bottom: 20px;
+             color: var(--text-primary);
+             border-bottom: 1px solid var(--border-light);
+             padding-bottom: 10px;
+              display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+         .criteria-section h2 i { color: var(--accent-secondary); }
+
+
+         .criteria-form-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 20px;
+             margin-bottom: 20px;
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+         }
+         .form-group label {
+             margin-bottom: 6px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+         .form-group input[type="text"],
+         .form-group select,
+         .form-group textarea {
+             width: 100%;
+             padding: 10px 12px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea {
+             min-height: 60px;
+             resize: vertical;
+         }
+          .form-group input:focus,
+          .form-group select:focus,
+          .form-group textarea:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+              box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+           .form-group small { /* Help text */
+               font-size: 0.8em;
+               color: var(--text-secondary);
+               margin-top: 4px;
+           }
+
+
+         /* --- Scouting Trigger --- */
+         .scout-trigger-section {
+            text-align: center;
+            padding: 10px 0;
+             margin-bottom: 25px;
+         }
+          #scout-button {
+            padding: 12px 35px; /* Larger button */
+            font-size: 1.1em;
+            background-color: var(--accent-secondary); /* Use accent color */
+            color: var(--bg-primary); /* Dark text */
+            font-weight: 600;
+        }
+        #scout-button:hover {
+             background-color: #0097a7; /* Darker cyan */
+        }
+         #scout-button:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+             background-color: var(--bg-tertiary);
+             color: var(--text-secondary);
+             border: 1px solid var(--border-color);
+         }
+
+
+        /* --- Results Section --- */
+         #results-section {
+            background-color: var(--bg-secondary); /* Match main bg */
+            padding: 0; /* No padding on section itself */
+         }
+         #results-section h2 {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+         }
+          #results-section h2 i { color: var(--accent-secondary); }
+
+         #scouting-status {
+             text-align: center;
+             margin: 30px 0;
+             font-size: 1.1em;
+             color: var(--accent-primary);
+             padding: 20px;
+             background-color: var(--bg-tertiary);
+             border-radius: 6px;
+         }
+         #scouting-status i {
+              margin-right: 8px;
+         }
+
+         .results-grid {
+            display: grid;
+            /* Using grid-template-columns for flexibility */
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px; /* Space between cards */
+         }
+
+        /* --- Result Card Styling --- */
+         .result-card {
+             background-color: var(--bg-tertiary);
+             border: 1px solid var(--card-border);
+             border-radius: 6px;
+             padding: 20px;
+             display: flex;
+             flex-direction: column;
+             gap: 12px; /* Spacing inside card */
+             transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+         }
+         .result-card:hover {
+              transform: translateY(-3px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+          }
+
+          .result-card h3 { /* Category Title */
+             font-size: 1.2em;
+             font-weight: 600;
+             color: var(--accent-secondary); /* Use accent color */
+             margin-bottom: 10px;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+             padding-bottom: 8px;
+             border-bottom: 1px solid var(--border-light);
+         }
+           .result-card h3 i {
+             font-size: 1.1em; /* Icon size */
+           }
+
+         /* Content within cards */
+         .result-card .content-item {
+             margin-bottom: 15px;
+             padding-bottom: 15px;
+             border-bottom: 1px solid var(--border-color);
+         }
+          .result-card .content-item:last-child {
+             margin-bottom: 0;
+             padding-bottom: 0;
+             border-bottom: none;
+         }
+
+         .result-card .item-title { /* Title of a specific trend/tech/competitor */
+             font-weight: 600;
+             color: var(--text-primary);
+             margin-bottom: 5px;
+             display: block;
+         }
+          .result-card .item-description {
+             font-size: 0.95em;
+             color: var(--text-primary);
+             line-height: 1.5;
+             margin-bottom: 8px;
+         }
+         .result-card .item-meta {
+             font-size: 0.8em;
+             color: var(--text-secondary);
+             display: flex;
+             gap: 10px;
+             align-items: center;
+         }
+          .result-card .item-meta i {
+             margin-right: 3px; /* Space between icon and text */
+          }
+          .result-card .item-meta a { /* Style links for sources */
+              color: var(--accent-primary);
+              text-decoration: none;
+              transition: color 0.2s ease;
+          }
+           .result-card .item-meta a:hover {
+              text-decoration: underline;
+              color: #6cacff;
+          }
+
+
+        /* --- General Button Styles --- */
+        .btn {
+            padding: 9px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease; font-family: var(--font-family); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;
+        }
+        .btn i { margin-right: 8px; }
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="scout-container">
+        <header class="scout-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-binoculars"></i> Industry Trend Scout</h1>
+        </header>
+
+        <section class="criteria-section">
+            <h2><i class="fas fa-filter"></i> Define Monitoring Criteria</h2>
+            <div class="criteria-form-grid">
+                <div class="form-group">
+                    <label for="industry-focus"><i class="fas fa-industry"></i> Industry/Sector(s)*</label>
+                    <input type="text" id="industry-focus" placeholder="e.g., Renewable Energy, FinTech, AI Healthcare">
+                    <small>Comma-separated if multiple.</small>
+                </div>
+                 <div class="form-group">
+                    <label for="keywords-themes"><i class="fas fa-tags"></i> Keywords / Technologies / Themes*</label>
+                    <textarea id="keywords-themes" rows="3" placeholder="e.g., Generative AI applications, Sustainable packaging, Remote patient monitoring, Quantum computing breakthroughs, Decentralized finance (DeFi)"></textarea>
+                     <small>Specific terms, concepts, or tech to track.</small>
+                </div>
+                <div class="form-group">
+                    <label for="location-focus"><i class="fas fa-map-marker-alt"></i> Geographic Focus (Optional)</label>
+                    <input type="text" id="location-focus" placeholder="e.g., USA, Europe, Global">
+                </div>
+                 <div class="form-group">
+                    <label for="timeframe"><i class="far fa-clock"></i> Timeframe (Optional)</label>
+                    <select id="timeframe">
+                        <option value="recent">Recent (Default)</option>
+                        <option value="3m">Last 3 Months</option>
+                        <option value="6m">Last 6 Months</option>
+                        <option value="1y">Last Year</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="company-type"><i class="fas fa-building"></i> Company Type (Optional)</label>
+                    <select id="company-type">
+                        <option value="all">All Types</option>
+                        <option value="startup">Startups / Early Stage</option>
+                        <option value="scaleup">Scaleups / Growth Stage</option>
+                        <option value="public">Public Companies</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+         <section id="scout-trigger-section" class="scout-trigger-section">
+            <button id="scout-button" class="btn" disabled><i class="fas fa-binoculars"></i> Scout for Trends & Insights</button>
+        </section>
+
+        <section id="results-section" class="hidden">
+             <h2><i class="fas fa-chart-bar"></i> Scouting Report</h2>
+             <div id="scouting-status" aria-live="polite" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Scouting based on your criteria... Please wait.
+             </div>
+             <div id="results-list" class="results-grid">
+                 <!-- Result Cards (Trends, Tech, Competitors) will be appended here by JS -->
+             </div>
+             <p id="no-results-message" class="hidden" style="text-align:center; color: var(--text-secondary); padding: 20px; background-color: var(--bg-tertiary); border-radius: 6px;">No significant trends or updates found matching your exact criteria for the selected timeframe.</p>
+        </section>
+
+    </div> <!-- End scout Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const criteriaFormGrid = document.querySelector('.criteria-form-grid');
+            const industryInput = document.getElementById('industry-focus');
+            const keywordsInput = document.getElementById('keywords-themes');
+            const locationInput = document.getElementById('location-focus');
+            const timeframeSelect = document.getElementById('timeframe');
+            const companyTypeSelect = document.getElementById('company-type');
+
+            const scoutButton = document.getElementById('scout-button');
+            const resultsSection = document.getElementById('results-section');
+            const scoutingStatus = document.getElementById('scouting-status');
+            const resultsList = document.getElementById('results-list');
+            const noResultsMessage = document.getElementById('no-results-message');
+
+            // --- Functions ---
+
+            function checkIfReadyToScout() {
+                // Define required fields
+                const industryText = industryInput.value.trim();
+                const keywordsText = keywordsInput.value.trim();
+                scoutButton.disabled = !(industryText && keywordsText);
+            }
+
+            function runScouting() {
+                if (scoutButton.disabled) return;
+
+                 // Capture criteria at the time of scouting
+                 const scoutingCriteria = {
+                     industry: industryInput.value.trim(),
+                     keywords: keywordsInput.value.trim(),
+                     location: locationInput.value.trim() || null,
+                     timeframe: timeframeSelect.value,
+                     companyType: companyTypeSelect.value
+                 };
+
+                console.log("Running Scouting with Criteria:", scoutingCriteria);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden'); // Show the section
+                scoutingStatus.classList.remove('hidden'); // Show spinner
+                resultsList.innerHTML = ''; // Clear previous results
+                noResultsMessage.classList.add('hidden'); // Hide no results message
+                scoutButton.disabled = true; // Disable button
+                scoutButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scouting...';
+                 // Optional: Disable criteria inputs while searching
+                 criteriaFormGrid.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+
+                // --- *** SIMULATE BACKEND ANALYSIS (Gemini API Call) *** ---
+                // In a real app:
+                // 1. Send `scoutingCriteria` to your backend.
+                // 2. Backend crafts a prompt for Gemini, instructing it to act as an industry analyst.
+                // 3. The prompt asks Gemini to search recent news, press releases, academic papers, market reports
+                //    (using its knowledge or potentially integrated search tools if available) relevant to the
+                //    `industry`, `keywords`, `location`, `timeframe`, and `companyType`.
+                // 4. Specifically ask Gemini to identify and summarize findings in distinct categories:
+                //    - Key Market Trends: Overall shifts, changing consumer behavior, regulatory changes.
+                //    - Emerging Technologies: New tech gaining traction, potential disruptions.
+                //    - Competitor Activity: Funding rounds, product launches, M&A, key hires of relevant companies.
+                // 5. Request the output in a structured format (JSON is ideal) with source/date information where possible.
+
+                setTimeout(() => {
+                    scoutingStatus.classList.add('hidden');
+                    scoutButton.disabled = false; // Re-enable button
+                    scoutButton.innerHTML = '<i class="fas fa-binoculars"></i> Scout for Trends & Insights';
+                     // Re-enable criteria inputs if they were disabled
+                     criteriaFormGrid.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    const simulatedResults = getSimulatedResults(scoutingCriteria);
+                    displayResults(simulatedResults);
+
+                    console.log("Simulated scouting complete.");
+
+                }, 3000 + Math.random() * 2000); // Simulate network + processing time
+            }
+
+            function displayResults(results) {
+                 resultsList.innerHTML = ''; // Clear again just in case
+
+                 let resultsFound = false;
+
+                 // 1. Market Trends Card
+                 if (results.trends && results.trends.length > 0) {
+                     resultsFound = true;
+                     resultsList.innerHTML += createResultCardHTML(
+                         'trends', 'Market Trends', 'fas fa-chart-line', results.trends);
+                 }
+
+                 // 2. Emerging Tech Card
+                 if (results.technologies && results.technologies.length > 0) {
+                      resultsFound = true;
+                     resultsList.innerHTML += createResultCardHTML(
+                         'tech', 'Emerging Technologies', 'fas fa-microchip', results.technologies);
+                 }
+
+                 // 3. Competitor Activity Card
+                 if (results.competitors && results.competitors.length > 0) {
+                      resultsFound = true;
+                     resultsList.innerHTML += createResultCardHTML(
+                         'competitors', 'Competitor Activity', 'fas fa-users', results.competitors);
+                 }
+
+
+                 // Show "No results" message if nothing was added
+                  noResultsMessage.classList.toggle('hidden', resultsFound);
+            }
+
+            // Helper to create HTML for a result card with multiple items
+            function createResultCardHTML(cardType, title, iconClass, items) {
+                 let itemsHTML = items.map(item => `
+                    <div class="content-item">
+                        <strong class="item-title">${escapeHtml(item.title)}</strong>
+                        <p class="item-description">${escapeHtml(item.description)}</p>
+                        <div class="item-meta">
+                             ${item.date ? `<span><i class="far fa-calendar-alt"></i> ${formatDate(item.date)}</span>` : ''}
+                             ${item.source ? `<span><i class="fas fa-link"></i> Source: <a href="#" onclick="alert('Simulated link to ${escapeHtml(item.source)}'); return false;">${escapeHtml(item.source)}</a></span>` : ''}
+                             ${item.relevance ? `<span title="Relevance Score"><i class="fas fa-star"></i> ${item.relevance}/5</span>` : ''}
+                         </div>
+                    </div>
+                 `).join('');
+
+                 return `
+                    <div class="result-card ${cardType}">
+                        <h3><i class="fas ${iconClass}"></i> ${escapeHtml(title)}</h3>
+                        ${itemsHTML}
+                    </div>`;
+            }
+
+
+            function getSimulatedResults(criteria) {
+                // Generate dummy results based on criteria
+                const results = {
+                    trends: [],
+                    technologies: [],
+                    competitors: []
+                };
+                const numItemsPerCategory = Math.floor(Math.random() * 3) + 1; // 1-3 items per category
+
+                // Simulate Trends
+                for (let i = 0; i < numItemsPerCategory; i++) {
+                    results.trends.push({
+                        title: `Trend ${i+1}: Increased Adoption of ${criteria.keywords.split(' ')[0]} in ${criteria.industry}`,
+                        description: `Recent market reports indicate a ${Math.floor(Math.random()*20)+10}% growth in adoption for solutions related to '${criteria.keywords.split(' ')[0]}' within the ${criteria.industry} sector, particularly in ${criteria.location || 'global markets'}. Key drivers include [Driver A] and [Driver B].`,
+                        date: randomDate(criteria.timeframe),
+                        source: ['Market Research Hub', 'Industry Analyst Report', 'Tech Trends Today'][i % 3],
+                        relevance: Math.floor(Math.random()*2)+4 // Score 4 or 5
+                    });
+                }
+
+                 // Simulate Technologies
+                 if (Math.random() > 0.3) { // 70% chance of finding tech
+                     for (let i = 0; i < numItemsPerCategory -1 || results.technologies.length === 0 ; i++) { // Ensure at least 1 if random allows
+                         results.technologies.push({
+                             title: `Emerging Tech ${i+1}: [Specific Tech ${i+1}] Applied to ${criteria.keywords.split(' ')[0]}`,
+                             description: `A new approach using [Specific Tech ${i+1}] is showing promise for improving [Benefit related to keywords]. Early research published by [University/Lab Name] suggests potential efficiency gains of ${Math.floor(Math.random()*30)+10}%.`,
+                             date: randomDate(criteria.timeframe),
+                             source: ['Academic Journal', 'Tech Conference Proceedings', 'Startup Demo Day'][i % 3],
+                             relevance: Math.floor(Math.random()*2)+3 // Score 3 or 4
+                         });
+                     }
+                 }
+
+                 // Simulate Competitor Activity
+                 if (Math.random() > 0.2) { // 80% chance of finding competitor news
+                     for (let i = 0; i < numItemsPerCategory; i++) {
+                         const companyName = `Competitor ${String.fromCharCode(65 + i)} Corp`;
+                         const activityType = ['Funding Round', 'New Product Launch', 'Acquisition', 'Key Hire'][i % 4];
+                         let description = '';
+                         switch(activityType) {
+                             case 'Funding Round': description = `${companyName} raised a $${Math.floor(Math.random()*50)+5}M ${criteria.stage || 'Series A'} round led by [VC Firm Name] to expand their ${criteria.keywords.split(' ')[0]} offerings.`; break;
+                             case 'New Product Launch': description = `${companyName} launched '[Product Name ${i+1}]', directly competing in the ${criteria.industry} space with a focus on [Unique Selling Point].`; break;
+                              case 'Acquisition': description = `${companyName} acquired [Smaller Startup Name], signaling consolidation in the market related to ${criteria.keywords.split(' ')[0]}.`; break;
+                               case 'Key Hire': description = `${companyName} hired [Executive Name] as their new CTO, previously at [Major Tech Company], likely to accelerate development in ${criteria.keywords.split(' ')[0]}.`; break;
+                         }
+                         results.competitors.push({
+                             title: `${companyName}: ${activityType}`,
+                             description: description,
+                             date: randomDate(criteria.timeframe),
+                             source: ['TechCrunch', 'VentureBeat', 'Company Press Release', 'LinkedIn'][i % 4],
+                             relevance: Math.floor(Math.random()*2)+4 // Score 4 or 5
+                         });
+                     }
+                 }
+
+                 // Randomly return no results sometimes
+                 if (Math.random() < 0.10) {
+                      console.log("Simulating no results found.");
+                      return { trends: [], technologies: [], competitors: [] };
+                 }
+
+                return results;
+            }
+
+
+            // --- Utility Functions ---
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const div = document.createElement('div');
+                 div.textContent = String(unsafe);
+                 return div.innerHTML;
+             }
+             function formatBytes(bytes, decimals = 2) { /* Not used here, but keep for consistency */
+                if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+             }
+             function randomDate(timeframe) { // Simple date simulator
+                 const now = new Date();
+                 let monthsAgo = 1; // Default recent
+                 if (timeframe === '3m') monthsAgo = 3;
+                 if (timeframe === '6m') monthsAgo = 6;
+                 if (timeframe === '1y') monthsAgo = 12;
+
+                 const pastDate = new Date(now.setMonth(now.getMonth() - Math.floor(Math.random() * monthsAgo)));
+                 return pastDate.toISOString().split('T')[0]; // YYYY-MM-DD
+             }
+
+
+            // --- Initial Setup ---
+             checkIfReadyToScout(); // Initial button state check
+             resultsSection.classList.add('hidden'); // Ensure results are hidden initially
+
+             // Event Listeners
+             [industryInput, keywordsInput].forEach(el => {
+                 el.addEventListener('input', checkIfReadyToScout); // Check on required input change
+             });
+             scoutButton.addEventListener('click', runScouting);
+
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

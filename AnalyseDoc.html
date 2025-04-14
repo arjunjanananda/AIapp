@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Document Analyzer</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #8e44ad; /* Purple for analysis */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .analyzer-container {
+            max-width: 1000px; /* Suitable width */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .analyzer-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .analyzer-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .analyzer-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+         /* --- Top Prompt Section --- */
+        .top-prompt-section {
+            text-align: center;
+            margin-bottom: 35px; /* Space below this section */
+        }
+
+        .top-prompt-section h2 {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .top-search-bar {
+             max-width: 700px;
+             margin: 0 auto; /* Center the search bar */
+        }
+
+        .top-search-bar input {
+            width: 100%;
+            padding: 14px 20px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 25px; /* Pill shape */
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .top-search-bar input::placeholder {
+             color: var(--text-secondary);
+        }
+        .top-search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        /* --- Analyzer Section Styling --- */
+         .analyzer-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analyzer-section h2 { /* Style for section headers */
+            font-size: 1.4em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+        }
+         .analyzer-section h3 {
+             font-size: 1.1em;
+             font-weight: 500;
+             margin-bottom: 15px;
+             color: var(--text-secondary);
+         }
+
+        /* --- File Input --- */
+         .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 15px; /* Space below upload area */
+        }
+        .upload-area:hover {
+            background-color: rgba(142, 68, 173, 0.1); /* Purple tint on hover */
+            border-color: var(--accent-secondary);
+        }
+        .upload-area i {
+            font-size: 3em;
+            color: var(--accent-secondary);
+            margin-bottom: 15px;
+        }
+        .upload-area p {
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+        .upload-area span {
+            color: var(--accent-secondary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+         .upload-area small {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            display: block;
+            margin-top: 10px;
+        }
+         .file-info {
+            padding: 10px;
+            background-color: rgba(142, 68, 173, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            font-size: 0.9em;
+        }
+
+        /* --- Analysis Options --- */
+        .options-list {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+             gap: 15px;
+             margin-bottom: 15px;
+        }
+        .options-list label {
+            display: flex; /* Use flex for better alignment */
+            align-items: center;
+            background-color: var(--bg-input);
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+            font-size: 0.95em;
+        }
+         .options-list label:hover {
+             border-color: var(--border-light);
+         }
+         .options-list input[type="checkbox"] {
+             margin-right: 10px;
+             accent-color: var(--accent-secondary); /* Style checkbox color */
+             width: 16px;
+             height: 16px;
+         }
+          #other-analysis-input {
+             width: 100%;
+             padding: 8px 10px;
+             background-color: var(--bg-primary); /* Slightly different background */
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.9em;
+             margin-top: 5px; /* Space above input */
+         }
+         #other-analysis-input:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+         }
+
+
+        /* --- Analyze Button --- */
+         .analyze-trigger {
+            text-align: center;
+            padding-top: 10px; /* Space above button */
+         }
+          #analyze-button {
+            padding: 12px 30px; /* Larger button */
+            font-size: 1.1em;
+            background-color: var(--accent-secondary); /* Use accent color */
+            color: white;
+        }
+        #analyze-button:hover {
+             background-color: #732d91; /* Darker purple */
+        }
+         #analyze-button:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+         }
+
+         /* --- Results Section --- */
+         #analysis-status {
+             text-align: center;
+             margin-bottom: 20px;
+             font-size: 1.1em;
+             color: var(--accent-primary);
+         }
+         #analysis-status i {
+              margin-right: 8px;
+         }
+
+         .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between result blocks */
+         }
+
+         .result-block {
+            background-color: var(--bg-input);
+            padding: 15px 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+         }
+          .result-block h3 {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--accent-secondary); /* Use accent color for titles */
+            margin-bottom: 10px;
+         }
+         .result-block pre { /* For preformatted text like summaries or key info */
+            white-space: pre-wrap;       /* CSS 3 */
+            word-wrap: break-word;     /* Internet Explorer 5.5+ */
+            background-color: var(--bg-primary); /* Slightly darker bg for code block feel */
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            max-height: 300px; /* Limit height */
+            overflow-y: auto; /* Allow scroll */
+         }
+         .result-block div { /* For other results like sentiment */
+             font-size: 0.95em;
+         }
+          .result-block .sentiment-positive { color: var(--success-color); font-weight: bold; }
+          .result-block .sentiment-negative { color: var(--danger-color); font-weight: bold; }
+          .result-block .sentiment-neutral { color: var(--text-secondary); font-weight: bold; }
+
+        /* --- General Button Styles (Mostly reused) --- */
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        /* Add other .btn- styles if needed */
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="analyzer-container">
+        <header class="analyzer-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-file-alt"></i> Analyse Documents</h1>
+        </header>
+
+        <section class="top-prompt-section">
+            <h2>What do you want to do with your document?</h2>
+            <div class="top-search-bar">
+                 <input type="text" id="top-search-input" placeholder="e.g., 'Summarize this report' or 'Extract names and dates'">
+            </div>
+        </section>
+
+        <section id="file-input-section" class="analyzer-section">
+            <h2>1. Upload Document</h2>
+             <div class="upload-area" id="upload-area">
+                <input type="file" id="file-upload-input" accept=".pdf,.doc,.docx,.txt,.rtf" hidden/> <!-- Accept common doc types -->
+                <label for="file-upload-input">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & Drop your document here</p>
+                    <p>or <span>Browse Files</span></p>
+                    <small>(Supports: PDF, DOC, DOCX, TXT)</small>
+                </label>
+            </div>
+             <div id="file-info" class="file-info hidden">
+                File Selected: <strong id="loaded-file-name"></strong> (<span id="loaded-file-size"></span>)
+            </div>
+        </section>
+
+        <section id="analysis-options-section" class="analyzer-section hidden">
+            <h2>2. Select Analysis Type(s)</h2>
+            <div class="options-list">
+                <label>
+                    <input type="checkbox" name="analysis_type" value="extract_info"> Extract Key Information (e.g., names, dates, locations)
+                </label>
+                <label>
+                    <input type="checkbox" name="analysis_type" value="summarize"> Summarize Text
+                </label>
+                <label>
+                    <input type="checkbox" name="analysis_type" value="sentiment"> Analyze Sentiment
+                </label>
+                 <label>
+                    <input type="checkbox" name="analysis_type" value="keywords"> Extract Keywords/Topics
+                </label>
+                 <label>
+                    <input type="checkbox" name="analysis_type" value="qa"> Question Answering (Ask below)
+                </label>
+                <label>
+                    <input type="checkbox" name="analysis_type" id="other-analysis-checkbox" value="other"> Other (Specify):
+                     <input type="text" id="other-analysis-input" placeholder="e.g., Translate to French" disabled>
+                </label>
+                 <!-- Add more specific extraction options if desired -->
+            </div>
+             <div id="qa-input-area" class="hidden" style="margin-top: 15px;">
+                 <label for="qa-question">Ask a question about the document:</label>
+                 <input type="text" id="qa-question" placeholder="e.g., What was the main conclusion?" style="width:100%; padding: 8px 10px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-family: inherit;">
+             </div>
+        </section>
+
+         <section id="analyze-trigger-section" class="analyzer-section analyze-trigger hidden">
+            <button id="analyze-button" class="btn" disabled><i class="fas fa-cogs"></i> Analyze Document</button>
+        </section>
+
+        <section id="results-section" class="analyzer-section hidden">
+             <h2>3. Analysis Results</h2>
+             <div id="analysis-status" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Analyzing document... Please wait.
+             </div>
+             <div id="results-container">
+                 <!-- Results will be appended here by JS -->
+             </div>
+        </section>
+
+    </div> <!-- End Analyzer Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileInfoDiv = document.getElementById('file-info');
+            const loadedFileName = document.getElementById('loaded-file-name');
+            const loadedFileSize = document.getElementById('loaded-file-size');
+
+            const optionsSection = document.getElementById('analysis-options-section');
+            const triggerSection = document.getElementById('analyze-trigger-section');
+            const analysisCheckboxes = document.querySelectorAll('input[name="analysis_type"]');
+            const otherCheckbox = document.getElementById('other-analysis-checkbox');
+            const otherInput = document.getElementById('other-analysis-input');
+            const qaCheckbox = document.querySelector('input[value="qa"]');
+            const qaInputArea = document.getElementById('qa-input-area');
+
+
+            const analyzeButton = document.getElementById('analyze-button');
+            const resultsSection = document.getElementById('results-section');
+            const analysisStatus = document.getElementById('analysis-status');
+            const resultsContainer = document.getElementById('results-container');
+
+            let selectedFile = null; // Store the File object
+
+            // --- Event Listeners ---
+
+            // File Input Handling
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--accent-secondary)';
+                uploadArea.style.backgroundColor = 'rgba(142, 68, 173, 0.05)';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'transparent';
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            // Enable/Disable "Other" Text Input
+            otherCheckbox.addEventListener('change', () => {
+                otherInput.disabled = !otherCheckbox.checked;
+                if (!otherCheckbox.checked) {
+                    otherInput.value = ''; // Clear if unchecked
+                } else {
+                    otherInput.focus();
+                }
+                checkIfAnalysisReady(); // Check if button should be enabled
+            });
+
+             // Show/Hide Q&A Input
+             qaCheckbox.addEventListener('change', () => {
+                 qaInputArea.classList.toggle('hidden', !qaCheckbox.checked);
+                  checkIfAnalysisReady();
+             });
+
+            // Enable Analyze button when an option is selected (after file load)
+            analysisCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkIfAnalysisReady);
+            });
+
+            // Analyze Button Click
+            analyzeButton.addEventListener('click', runAnalysis);
+
+            // --- Functions ---
+
+            function handleFile(file) {
+                // Basic validation (can add more specific types if needed)
+                 const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/rtf'];
+                 // Note: Browser MIME type detection isn't perfect, especially for .docx/.doc
+                 // Might need backend validation for robustness.
+                 // if (!allowedTypes.includes(file.type) && !/\.(docx?|pdf|txt|rtf)$/i.test(file.name)) {
+                 //    alert('Unsupported file type. Please upload PDF, DOC(X), or TXT.');
+                 //    return;
+                 // }
+
+                selectedFile = file;
+
+                // Display file info
+                loadedFileName.textContent = file.name;
+                loadedFileSize.textContent = formatBytes(file.size);
+                fileInfoDiv.classList.remove('hidden');
+
+                // Show next steps and reset results
+                optionsSection.classList.remove('hidden');
+                triggerSection.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+                resultsContainer.innerHTML = ''; // Clear previous results
+                checkIfAnalysisReady(); // Check if button should be enabled now
+            }
+
+            function checkIfAnalysisReady() {
+                let oneChecked = false;
+                analysisCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        oneChecked = true;
+                    }
+                });
+
+                // Special check for 'other' - must have text if checked
+                if (otherCheckbox.checked && otherInput.value.trim() === '') {
+                    oneChecked = false;
+                }
+                 // Special check for 'qa' - must have question if checked
+                if (qaCheckbox.checked && document.getElementById('qa-question').value.trim() === '') {
+                    // Allow analysis button if QA is checked but question isn't filled yet,
+                    // but maybe add validation in runAnalysis
+                }
+
+                analyzeButton.disabled = !(selectedFile && oneChecked);
+            }
+
+            function runAnalysis() {
+                if (!selectedFile || analyzeButton.disabled) return;
+
+                const selectedAnalyses = [];
+                analysisCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        if (cb.value === 'other') {
+                            const otherValue = otherInput.value.trim();
+                            if (otherValue) { // Only add 'other' if text is provided
+                                selectedAnalyses.push({ type: 'other', detail: otherValue });
+                            } else {
+                                 alert("Please specify the 'Other' analysis type.");
+                                 otherInput.focus();
+                                 // Prevent analysis from proceeding
+                                 throw new Error("Other analysis type not specified."); // Stop execution
+                            }
+                        } else if (cb.value === 'qa') {
+                             const question = document.getElementById('qa-question').value.trim();
+                             if (!question) {
+                                 alert("Please enter a question for the Q&A analysis.");
+                                 document.getElementById('qa-question').focus();
+                                  throw new Error("Q&A question not provided.");
+                             }
+                             selectedAnalyses.push({ type: 'qa', question: question });
+                        } else {
+                            selectedAnalyses.push({ type: cb.value });
+                        }
+                    }
+                });
+
+                if (selectedAnalyses.length === 0) {
+                    alert("Please select at least one analysis type.");
+                    return;
+                }
+
+
+                console.log("Analyzing file:", selectedFile.name);
+                console.log("Selected analyses:", selectedAnalyses);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden');
+                analysisStatus.classList.remove('hidden');
+                resultsContainer.innerHTML = ''; // Clear previous results
+                analyzeButton.disabled = true;
+                analyzeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+                // --- *** SIMULATE ANALYSIS PROCESS *** ---
+                // In a real app, you'd upload 'selectedFile' and send 'selectedAnalyses'
+                // to a backend service. The backend would process the document (potentially using
+                // libraries like PyPDF2, python-docx, spaCy, NLTK, Hugging Face Transformers, etc.)
+                // and return structured results for each requested analysis type.
+
+                setTimeout(() => {
+                    analysisStatus.classList.add('hidden');
+                    analyzeButton.disabled = false;
+                    analyzeButton.innerHTML = '<i class="fas fa-cogs"></i> Analyze Document';
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    selectedAnalyses.forEach(analysis => {
+                        const resultBlock = document.createElement('div');
+                        resultBlock.classList.add('result-block');
+                        let content = '';
+                        let title = '';
+
+                        switch (analysis.type) {
+                            case 'extract_info':
+                                title = 'Extracted Key Information';
+                                content = `<pre>Names: John Doe, Jane Smith\nDates: 2024-01-15, March 3rd\nLocations: New York, Building A\nOrganizations: AI Swag Corp.\n\n[Simulated extracted entities...]</pre>`;
+                                break;
+                            case 'summarize':
+                                title = 'Summary';
+                                content = `<pre>This document discusses the quarterly performance, highlighting a 15% revenue increase and successful cost reductions. Key challenges include market saturation, addressed by exploring new verticals. Overall, a positive quarter with strategic adjustments planned.\n\n[Simulated summary based on document content...]</pre>`;
+                                break;
+                            case 'sentiment':
+                                title = 'Sentiment Analysis';
+                                // Simulate different outcomes
+                                const rand = Math.random();
+                                if (rand < 0.6) {
+                                     content = `<div>Overall Sentiment: <span class="sentiment-positive">Positive</span> (Score: ${(0.5 + rand * 0.5).toFixed(2)})</div>`;
+                                } else if (rand < 0.85) {
+                                     content = `<div>Overall Sentiment: <span class="sentiment-neutral">Neutral</span> (Score: ${(0.5 - (rand-0.6)*2).toFixed(2)})</div>`;
+                                } else {
+                                     content = `<div>Overall Sentiment: <span class="sentiment-negative">Negative</span> (Score: ${(-0.1 - (rand-0.85)*5).toFixed(2)})</div>`;
+                                }
+                                content += `<br><small>[Simulated sentiment score based on text analysis.]</small>`;
+                                break;
+                            case 'keywords':
+                                title = 'Keywords / Topics';
+                                content = `<pre>AI, Automation, Data Analysis, Marketing, Sales, Quarterly Results, Performance Metrics, Market Saturation\n\n[Simulated keywords extracted from document...]</pre>`;
+                                break;
+                            case 'qa':
+                                 title = `Answer for: "${escapeHtml(analysis.question)}"`;
+                                 content = `<pre>Based on the document, the main conclusion was that the new strategy led to significant improvements in efficiency.\n\n[Simulated answer based on document content and question: ${escapeHtml(analysis.question)}]</pre>`;
+                                break;
+                            case 'other':
+                                title = `Result for: "${escapeHtml(analysis.detail)}"`;
+                                content = `<pre>[Simulated result for the custom analysis request: ${escapeHtml(analysis.detail)}]</pre>`;
+                                break;
+                        }
+
+                        resultBlock.innerHTML = `<h3>${title}</h3>${content}`;
+                        resultsContainer.appendChild(resultBlock);
+                    });
+
+                    console.log("Simulated analysis complete.");
+
+                }, 2000 + selectedAnalyses.length * 500); // Simulate longer time for more analyses
+            }
+
+
+            // --- Utility Functions ---
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes' // Handle zero or non-numeric input
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const text = String(unsafe);
+                  // Basic check, sufficient for this demo context where we control most inputs
+                 if (/[<>]/.test(text)) {
+                     const div = document.createElement('div');
+                     div.textContent = text;
+                     return div.innerHTML;
+                 }
+                 return text;
+             }
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

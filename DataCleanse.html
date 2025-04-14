@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Data Cleansing (Single File with Top Search)</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #5fc9a3; /* Greenish */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .cleansing-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .cleansing-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .cleansing-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .cleansing-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- NEW: Top Prompt Section --- */
+        .top-prompt-section {
+            text-align: center;
+            margin-bottom: 35px; /* Space below this section */
+        }
+
+        .top-prompt-section h2 {
+            font-size: 1.5em; /* Slightly larger */
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .top-search-bar {
+             max-width: 700px;
+             margin: 0 auto; /* Center the search bar */
+        }
+
+        .top-search-bar input {
+            width: 100%;
+            padding: 14px 20px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 25px; /* Pill shape */
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .top-search-bar input::placeholder {
+             color: var(--text-secondary);
+        }
+        .top-search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+        /* --- END: Top Prompt Section --- */
+
+
+        .cleansing-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .cleansing-section h2 { /* Style for section headers */
+            font-size: 1.4em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+        }
+        .cleansing-section h3 {
+             font-size: 1.1em;
+             font-weight: 500;
+             margin-bottom: 15px;
+             color: var(--text-secondary);
+        }
+
+        /* --- Input Section --- */
+        .input-methods {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            flex-basis: 48%; /* Adjust basis for wrap */
+            min-width: 280px; /* Ensure minimum width */
+        }
+        .upload-area:hover {
+            background-color: rgba(74, 144, 226, 0.1);
+            border-color: var(--accent-primary);
+        }
+        .upload-area i {
+            font-size: 3em;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+        }
+        .upload-area p {
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+        .upload-area span {
+            color: var(--accent-primary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+        .upload-area small {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .connector-area {
+            flex-basis: 48%; /* Adjust basis for wrap */
+             min-width: 280px;
+            padding-top: 10px;
+        }
+        .connector-area p {
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .connector-area button {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(95, 201, 163, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            font-size: 0.9em;
+        }
+
+        /* --- Preview & Profile Section --- */
+        .data-preview-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap; /* Allow wrapping */
+        }
+
+        .table-container {
+            flex-grow: 1;
+            max-height: 400px; /* Limit height and make scrollable */
+            overflow: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-primary); /* Darker background for table */
+            min-width: 300px; /* Ensure table container doesn't get too small */
+            flex-basis: 60%; /* Give table more space initially */
+        }
+
+        #data-preview-table, #cleaned-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        #data-preview-table thead th, #cleaned-preview-table thead th {
+            background-color: var(--bg-tertiary);
+            padding: 10px 12px;
+            text-align: left;
+            position: sticky; /* Make header sticky */
+            top: 0;
+            z-index: 10; /* Ensure header stays above scrolling content */
+            border-bottom: 2px solid var(--border-light);
+            cursor: pointer; /* Indicate clickable for profiling */
+            white-space: nowrap;
+        }
+        #data-preview-table thead th:hover {
+             background-color: #333;
+        }
+
+        #data-preview-table tbody td, #cleaned-preview-table tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Show ... for overflow */
+            max-width: 250px; /* Limit cell width */
+        }
+        #data-preview-table tbody tr:nth-child(even),
+        #cleaned-preview-table tbody tr:nth-child(even) {
+            background-color: var(--bg-input);
+        }
+        #data-preview-table tbody tr:hover,
+        #cleaned-preview-table tbody tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+
+        #no-data-message {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .profile-panel {
+            flex-basis: 300px; /* Fixed width for profile panel */
+            flex-shrink: 0;
+            padding: 15px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            align-self: stretch; /* Make panel height match table container if wrapping */
+        }
+        .profile-panel h3 {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .profile-panel p {
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .profile-panel strong {
+            color: var(--text-secondary);
+            display: inline-block;
+            width: 110px; /* Align labels */
+        }
+
+        /* --- Operations Section --- */
+        .operations-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            flex-wrap: wrap; /* Allow wrapping */
+        }
+        .operations-list {
+            flex-basis: 250px;
+            flex-shrink: 0;
+             min-width: 200px;
+        }
+        .operations-list p small {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .operation-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            font-size: 0.9em;
+        }
+        .operation-btn i {
+            margin-right: 10px;
+            width: 16px; /* Align icons */
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        .operation-btn:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-light);
+        }
+        .operation-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .operation-config-panel {
+            flex-grow: 1;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            min-height: 200px; /* Ensure it has some height */
+            min-width: 280px;
+        }
+        .operation-config-panel h3 {
+            color: var(--text-primary);
+        }
+        .operation-config-panel h4 { /* Style for dynamically added header */
+             font-size: 1.05em;
+             font-weight: 500;
+             margin-bottom: 15px;
+             color: var(--text-primary);
+        }
+        .operation-config-panel label {
+             display: block;
+             margin-bottom: 5px;
+             font-size: 0.9em;
+        }
+         .operation-config-panel input[type="checkbox"] {
+             margin-right: 5px;
+         }
+         .operation-config-panel select,
+         .operation-config-panel input[type="text"] {
+             width: 100%;
+             padding: 8px 10px;
+             background-color: var(--bg-tertiary);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             margin-bottom: 10px;
+             font-family: inherit;
+             font-size: 0.9em;
+         }
+         .operation-config-panel .btn-sm { /* Specific style for buttons inside config */
+              padding: 6px 12px;
+              font-size: 0.85em;
+              margin-top: 10px;
+         }
+
+
+        /* --- Applied Steps --- */
+        .applied-steps {
+            margin-top: 25px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 20px;
+        }
+        .applied-steps ul {
+            list-style: none;
+            padding-left: 0;
+            max-height: 150px; /* Limit height */
+            overflow-y: auto; /* Make scrollable */
+        }
+        .applied-steps li {
+            background-color: var(--bg-input);
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .applied-steps li button {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.9em;
+            opacity: 0.7;
+            padding: 0 5px; /* Easier to click */
+        }
+        .applied-steps li button:hover {
+             opacity: 1;
+        }
+
+
+        /* --- Execution & Output --- */
+        .execution-controls {
+            margin-bottom: 25px;
+        }
+        .execution-controls .btn {
+             margin-right: 15px;
+        }
+
+        .results-area {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+        }
+        .results-area h3 {
+             color: var(--text-primary);
+        }
+        .results-summary {
+            margin-bottom: 20px;
+        }
+        .results-summary ul {
+            list-style: disc;
+            padding-left: 25px;
+            font-size: 0.9em;
+        }
+        .results-summary li {
+             margin-bottom: 5px;
+        }
+
+        .output-actions {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 20px;
+        }
+        .output-actions small {
+             margin-left: 10px;
+             color: var(--text-secondary);
+        }
+        #cleaned-data-preview {
+            margin-top: 20px;
+        }
+
+        #processing-indicator {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: var(--accent-primary);
+        }
+        #processing-indicator i {
+             margin-right: 8px;
+        }
+
+        /* --- General Button Styles --- */
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover { background-color: #3a7bc8; }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+        .btn-secondary:hover { background-color: #333; border-color: #666; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--bg-tertiary); border-color: var(--border-color); color: var(--text-secondary); }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .btn-success:hover { background-color: #27ae60; }
+         .btn-sm { /* Smaller button variant */
+             padding: 6px 12px;
+             font-size: 0.85em;
+         }
+
+        /* --- Utility Classes --- */
+        .hidden {
+            display: none !important; /* Use important to override potential conflicts */
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="cleansing-container">
+        <header class="cleansing-header">
+            <!-- Link this back to your main app page -->
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-broom"></i> Data Cleansing</h1>
+        </header>
+
+        <!-- NEW: Top Prompt Section -->
+        <section class="top-prompt-section">
+            <h2>What do you want to do with your data?</h2>
+            <div class="top-search-bar">
+                 <input type="text" id="top-search-input" placeholder="Search for cleansing operations or describe your goal...">
+            </div>
+        </section>
+        <!-- END: Top Prompt Section -->
+
+
+        <!-- 1. Data Input Section -->
+        <section id="data-input-section" class="cleansing-section">
+            <h2>1. Load Your Data</h2>
+            <div class="input-methods">
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-input" accept=".csv, .xlsx, .xls, .json" hidden/>
+                    <label for="file-input">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & Drop your file here</p>
+                        <p>or <span>Browse Files</span></p>
+                        <small>(Supports: CSV, Excel, JSON)</small>
+                    </label>
+                </div>
+                <div class="connector-area">
+                    <p>Or Connect to a Data Source:</p>
+                    <button class="btn btn-secondary" disabled><i class="fas fa-database"></i> Database (Coming Soon)</button>
+                    <button class="btn btn-secondary" disabled><i class="fab fa-aws"></i> S3 (Coming Soon)</button>
+                     <button class="btn btn-secondary" disabled><i class="fas fa-warehouse"></i> Data Warehouse (Coming Soon)</button>
+                </div>
+            </div>
+             <div id="file-info" class="file-info hidden">
+                Loaded file: <strong id="loaded-file-name"></strong> (<span id="loaded-file-size"></span>)
+            </div>
+        </section>
+
+        <!-- Remaining Sections (Preview, Operations, Execution) remain unchanged -->
+
+        <!-- 2. Data Profiling & Preview Section -->
+        <section id="data-profile-section" class="cleansing-section hidden">
+            <h2>2. Preview & Profile Data</h2>
+            <div class="data-preview-wrapper">
+                <div id="data-preview-container" class="table-container">
+                    <p id="no-data-message">No data loaded yet. Upload a file above.</p>
+                    <table id="data-preview-table">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="column-profile-panel" class="profile-panel">
+                    <h3>Column Profile</h3>
+                    <p id="profile-placeholder">Select a column header in the table to see details.</p>
+                    <div id="profile-details" class="hidden">
+                        <p><strong>Column:</strong> <span id="profile-col-name"></span></p>
+                        <p><strong>Data Type:</strong> <span id="profile-col-type"></span></p>
+                        <p><strong>Missing Values:</strong> <span id="profile-col-missing"></span></p>
+                        <p><strong>Unique Values:</strong> <span id="profile-col-unique"></span></p>
+                        <!-- Add more profile stats here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Cleansing Operations Section -->
+        <section id="data-operations-section" class="cleansing-section hidden">
+             <h2>3. Apply Cleansing Operations</h2>
+             <div class="operations-layout">
+                 <div id="operations-list" class="operations-list">
+                    <h3>Available Operations</h3>
+                    <p><small>Select columns in the table above first.</small></p>
+                    <button class="operation-btn" data-op="remove-duplicates"><i class="fas fa-copy"></i> Remove Duplicates</button>
+                    <button class="operation-btn" data-op="handle-missing"><i class="fas fa-question-circle"></i> Handle Missing Values</button>
+                    <button class="operation-btn" data-op="standardize-case"><i class="fas fa-font"></i> Standardize Case</button>
+                    <button class="operation-btn" data-op="trim-whitespace"><i class="fas fa-cut"></i> Trim Whitespace</button>
+                    <button class="operation-btn" data-op="find-replace"><i class="fas fa-search"></i> Find & Replace</button>
+                    <button class="operation-btn" data-op="change-type"><i class="fas fa-exchange-alt"></i> Change Data Type</button>
+                    <button class="operation-btn" data-op="format-date"><i class="fas fa-calendar-alt"></i> Format Date</button>
+                     <!-- Add more buttons -->
+                     <button class="operation-btn" data-op="define-rules" style="margin-top: 15px;"><i class="fas fa-check-double"></i> Define Validation Rules</button>
+                 </div>
+                 <div id="operation-config-panel" class="operation-config-panel">
+                    <h3>Configure Operation</h3>
+                    <p id="config-placeholder">Select an operation from the left to configure it.</p>
+                    <div id="config-details" class="hidden">
+                        <!-- Configuration form elements will be added here by JS -->
+                    </div>
+                 </div>
+             </div>
+             <div id="applied-steps" class="applied-steps">
+                 <h3>Applied Steps:</h3>
+                 <ul id="steps-list">
+                     <li id="no-steps-li">No operations applied yet.</li>
+                 </ul>
+             </div>
+        </section>
+
+         <!-- 4. Execution & Output Section (Combined for simplicity) -->
+        <section id="execution-output-section" class="cleansing-section hidden">
+            <h2>4. Execute & Get Results</h2>
+            <div class="execution-controls">
+                <button id="run-cleansing-btn" class="btn btn-primary"><i class="fas fa-play"></i> Run Cleansing Process</button>
+                 <button id="save-recipe-btn" class="btn btn-secondary" disabled><i class="fas fa-save"></i> Save Recipe (Coming Soon)</button>
+            </div>
+            <div id="results-area" class="results-area hidden">
+                <h3>Cleansing Results</h3>
+                 <div id="results-summary" class="results-summary">
+                    <p>Processing complete. Summary:</p>
+                    <ul id="results-list">
+                        <!-- Results summary items added by JS -->
+                    </ul>
+                 </div>
+                <div class="output-actions">
+                    <button id="download-results-btn" class="btn btn-success"><i class="fas fa-download"></i> Download Cleaned Data</button>
+                    <p><small>Download as CSV (Simulated)</small></p>
+                </div>
+                 <div id="cleaned-data-preview" class="table-container hidden">
+                    <h4>Cleaned Data Preview (Sample)</h4>
+                    <table id="cleaned-preview-table">
+                         <thead></thead>
+                         <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+             <div id="processing-indicator" class="hidden">
+                <i class="fas fa-spinner fa-spin"></i> Processing... Please wait.
+            </div>
+        </section>
+
+    </div> <!-- End Cleansing Container -->
+
+    <script>
+        // --- JAVASCRIPT REMAINS EXACTLY THE SAME AS THE PREVIOUS SINGLE-FILE VERSION ---
+        // No changes needed here as the new HTML/CSS doesn't require new JS functionality yet.
+        // The existing JS will correctly handle the unchanged sections below the new top prompt.
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Get DOM Elements ---
+            const fileInput = document.getElementById('file-input');
+            const uploadArea = document.getElementById('upload-area');
+            const fileInfoDiv = document.getElementById('file-info');
+            const loadedFileName = document.getElementById('loaded-file-name');
+            const loadedFileSize = document.getElementById('loaded-file-size');
+
+            const profileSection = document.getElementById('data-profile-section');
+            const operationsSection = document.getElementById('data-operations-section');
+            const execOutputSection = document.getElementById('execution-output-section');
+
+            const previewTable = document.getElementById('data-preview-table');
+            const previewThead = previewTable.querySelector('thead');
+            const previewTbody = previewTable.querySelector('tbody');
+            const noDataMessage = document.getElementById('no-data-message');
+
+            const profilePanel = document.getElementById('column-profile-panel');
+            const profilePlaceholder = document.getElementById('profile-placeholder');
+            const profileDetailsDiv = document.getElementById('profile-details');
+            const profileColName = document.getElementById('profile-col-name');
+            const profileColType = document.getElementById('profile-col-type');
+            const profileColMissing = document.getElementById('profile-col-missing');
+            const profileColUnique = document.getElementById('profile-col-unique');
+
+            const operationBtns = document.querySelectorAll('.operation-btn');
+            const configPanel = document.getElementById('operation-config-panel');
+            const configPlaceholder = document.getElementById('config-placeholder');
+            const configDetailsDiv = document.getElementById('config-details');
+
+            const appliedStepsList = document.getElementById('steps-list');
+            let noStepsLi = document.getElementById('no-steps-li'); // Use let
+
+            const runCleansingBtn = document.getElementById('run-cleansing-btn');
+            const processingIndicator = document.getElementById('processing-indicator');
+            const resultsArea = document.getElementById('results-area');
+            const resultsList = document.getElementById('results-list');
+            const downloadBtn = document.getElementById('download-results-btn');
+
+            let rawData = []; // To store parsed data
+            let headers = [];
+            let appliedOperations = []; // Store the sequence of operations
+
+            // --- Event Listeners ---
+
+            // 1. File Input Handling (Drag & Drop and Browse)
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--accent-primary)';
+                uploadArea.style.backgroundColor = 'rgba(74, 144, 226, 0.05)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-light)';
+                 uploadArea.style.backgroundColor = 'transparent';
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            // 2. Operation Button Clicks
+            operationBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                     if (headers.length === 0) {
+                         alert("Please load data before selecting an operation.");
+                         return;
+                     }
+                    const opType = btn.dataset.op;
+                    showOperationConfig(opType);
+                });
+            });
+
+            // 3. Run Cleansing Button Click
+            runCleansingBtn.addEventListener('click', runCleansingProcess);
+
+            // 4. Column Header Click for Profiling
+            // Use event delegation on thead
+             previewThead.addEventListener('click', (e) => {
+                if (e.target.tagName === 'TH') {
+                    const columnIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
+                    const columnName = headers[columnIndex];
+                    if (columnName) {
+                         showColumnProfile(columnName, columnIndex);
+                         // Optional: Highlight selected column header
+                         previewThead.querySelectorAll('th').forEach(th => th.style.backgroundColor = ''); // Reset others
+                         e.target.style.backgroundColor = '#444'; // Highlight clicked
+                    }
+                }
+             });
+
+             // 5. Remove Applied Step
+             appliedStepsList.addEventListener('click', (e) => {
+                 if (e.target.classList.contains('remove-step-btn')) {
+                     const indexToRemove = parseInt(e.target.dataset.index, 10);
+                     removeAppliedStep(indexToRemove);
+                 }
+             });
+
+            // --- Functions ---
+
+            function handleFile(file) {
+                // Basic validation (can be extended)
+                if (!file.type.match('csv.*') && !file.type.match('json.*') && !file.name.match(/\.(xlsx?|xls)$/i)) {
+                    alert('Unsupported file type. Please upload CSV, Excel, or JSON.');
+                    return;
+                }
+
+                // Display file info
+                loadedFileName.textContent = file.name;
+                loadedFileSize.textContent = formatBytes(file.size);
+                fileInfoDiv.classList.remove('hidden');
+
+                // Show sections
+                profileSection.classList.remove('hidden');
+                operationsSection.classList.remove('hidden');
+                execOutputSection.classList.remove('hidden');
+                resultsArea.classList.add('hidden'); // Hide previous results
+
+                // Reset previous data/state
+                resetUIState();
+
+                // Read and parse the file
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    // --- VERY BASIC PARSING - REPLACE WITH ROBUST LIBRARIES ---
+                    try {
+                        if (file.name.toLowerCase().endsWith('.csv')) {
+                            parseCSV(content);
+                        } else if (file.name.toLowerCase().endsWith('.json')) {
+                            parseJSON(content);
+                        } else {
+                             // Placeholder for Excel - needs library like SheetJS
+                            alert('Excel parsing needs a library and is not implemented in this basic demo.');
+                             displayData([], [['Excel File Loaded (Preview not available)']]); // Show placeholder
+                        }
+                         // Only display if parsing was somewhat successful
+                        if(headers.length > 0 || rawData.length > 0) {
+                            displayData(headers, rawData);
+                             // Enable operation buttons now that data is loaded
+                             // operationBtns.forEach(btn => btn.disabled = false); // If you added disabled attribute initially
+                        }
+
+                    } catch (error) {
+                        console.error("Parsing Error:", error);
+                        alert(`Error parsing file: ${error.message}`);
+                        resetUIState(true); // Pass true to hide sections on error
+                    }
+                    // --- END BASIC PARSING ---
+                };
+                reader.onerror = (e) => {
+                    console.error("File Reading Error:", e);
+                    alert('Error reading file.');
+                     resetUIState(true); // Pass true to hide sections on error
+                };
+                reader.readAsText(file); // Read as text for CSV/JSON
+            }
+
+             function resetUIState(hideSections = false) {
+                 rawData = [];
+                 headers = [];
+                 appliedOperations = [];
+                 previewThead.innerHTML = '';
+                 previewTbody.innerHTML = '';
+                 // Clear table footer if exists
+                 if (previewTable.tFoot) {
+                    previewTable.deleteTFoot();
+                 }
+                 noDataMessage.classList.remove('hidden');
+                 profileDetailsDiv.classList.add('hidden');
+                 profilePlaceholder.classList.remove('hidden');
+                 configDetailsDiv.classList.add('hidden');
+                 configPlaceholder.classList.remove('hidden');
+                 appliedStepsList.innerHTML = '<li id="no-steps-li">No operations applied yet.</li>';
+                 noStepsLi = document.getElementById('no-steps-li'); // Re-assign after innerHTML change
+                 // operationBtns.forEach(btn => btn.disabled = true); // Disable ops if no data
+
+                 if(hideSections) {
+                     profileSection.classList.add('hidden');
+                     operationsSection.classList.add('hidden');
+                     execOutputSection.classList.add('hidden');
+                     fileInfoDiv.classList.add('hidden');
+                 }
+            }
+
+
+            function parseCSV(csvContent) {
+                // WARNING: Very basic CSV parsing. Fails with quotes, commas in fields, etc.
+                // Use PapaParse library for robust parsing in a real app.
+                const lines = csvContent.split(/[\r\n]+/).filter(line => line.trim() !== ''); // Handle different line endings
+                if (lines.length === 0) throw new Error("CSV file is empty or invalid.");
+
+                // Basic split, assumes comma delimiter and no quotes/commas in fields
+                headers = lines[0].split(',').map(h => h.trim());
+                rawData = lines.slice(1).map(line => line.split(',').map(cell => cell.trim()));
+
+                if (headers.length === 0 || rawData.length === 0) {
+                    throw new Error("Could not parse headers or data from CSV.");
+                }
+                 // Basic check for consistent column count
+                const expectedCols = headers.length;
+                if (rawData.some(row => row.length !== expectedCols)) {
+                    console.warn("CSV Parsing Warning: Some rows have inconsistent column counts.");
+                    // Pad shorter rows, truncate longer ones
+                    rawData = rawData.map(row => {
+                         if (row.length > expectedCols) return row.slice(0, expectedCols);
+                         while (row.length < expectedCols) row.push(''); // Pad with empty strings
+                         return row;
+                    });
+                }
+            }
+
+             function parseJSON(jsonContent) {
+                // Assumes JSON is an array of objects
+                const jsonData = JSON.parse(jsonContent);
+                if (!Array.isArray(jsonData)) {
+                     throw new Error("JSON is not an array. Expected an array of objects.");
+                }
+                if (jsonData.length === 0) {
+                    // Handle empty array - show headers maybe, but no data?
+                     console.warn("JSON array is empty.");
+                     headers = []; // Or try to infer if possible, difficult without data
+                     rawData = [];
+                     return; // Or throw error depending on desired behavior
+                 }
+                // Get headers from the keys of the first object
+                headers = Object.keys(jsonData[0]);
+                // Convert array of objects to array of arrays
+                rawData = jsonData.map(obj => headers.map(header => obj[header] !== undefined && obj[header] !== null ? String(obj[header]) : ''));
+            }
+
+
+            function displayData(headerArray, dataArray) {
+                previewThead.innerHTML = ''; // Clear previous header
+                previewTbody.innerHTML = ''; // Clear previous body
+                 // Clear table footer if exists
+                 if (previewTable.tFoot) {
+                    previewTable.deleteTFoot();
+                 }
+
+                if (headerArray.length === 0 && dataArray.length === 0 && !document.getElementById('no-data-message').textContent.includes('Excel')) {
+                     noDataMessage.classList.remove('hidden');
+                     return;
+                }
+
+                noDataMessage.classList.add('hidden');
+
+                // Create header row
+                const headerRow = document.createElement('tr');
+                headerArray.forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    th.title = `Click to profile '${headerText}'`; // Tooltip
+                    headerRow.appendChild(th);
+                });
+                previewThead.appendChild(headerRow);
+
+                // Create data rows (limit preview for performance)
+                const previewLimit = 100;
+                const dataToDisplay = dataArray.slice(0, previewLimit);
+
+                dataToDisplay.forEach(rowData => {
+                    const row = document.createElement('tr');
+                    rowData.forEach(cellData => {
+                        const td = document.createElement('td');
+                        td.textContent = cellData;
+                        td.title = cellData; // Show full text on hover if truncated
+                        row.appendChild(td);
+                    });
+                    previewTbody.appendChild(row);
+                });
+
+                 if (dataArray.length > previewLimit) {
+                     const tfoot = previewTable.createTFoot();
+                     const footerRow = tfoot.insertRow();
+                     const footerCell = footerRow.insertCell();
+                     footerCell.colSpan = headerArray.length;
+                     footerCell.textContent = `Showing first ${previewLimit} of ${dataArray.length} rows.`;
+                     footerCell.style.textAlign = 'center';
+                     footerCell.style.fontStyle = 'italic';
+                     footerCell.style.color = 'var(--text-secondary)';
+                     footerCell.style.padding = '8px';
+                 }
+            }
+
+            function showColumnProfile(columnName, columnIndex) {
+                 if (!rawData || rawData.length === 0) return;
+
+                 // Basic Profiling Logic (Needs significant expansion)
+                 let missingCount = 0;
+                 const values = [];
+                 rawData.forEach(row => {
+                     const value = row[columnIndex];
+                     if (value === null || value === undefined || value === '') {
+                         missingCount++;
+                     }
+                     values.push(value);
+                 });
+
+                 const validValues = values.filter(v => v !== null && v !== undefined && v !== '');
+                 const uniqueValues = new Set(validValues).size;
+                 const missingPercent = rawData.length > 0 ? ((missingCount / rawData.length) * 100).toFixed(1) : 0;
+
+
+                 // Determine likely type (very basic)
+                 let type = 'Text';
+                  if (validValues.length > 0) {
+                    const numericValues = validValues.map(Number).filter(n => !isNaN(n));
+                    const dateValues = validValues.map(v => Date.parse(v)).filter(d => !isNaN(d));
+
+                    // Heuristics (adjust thresholds as needed)
+                    if (numericValues.length / validValues.length > 0.8) {
+                        type = 'Number';
+                    } else if (dateValues.length / validValues.length > 0.6) {
+                        type = 'Potential Date';
+                    }
+                  }
+
+
+                 profileColName.textContent = columnName;
+                 profileColType.textContent = type;
+                 profileColMissing.textContent = `${missingCount} (${missingPercent}%)`;
+                 profileColUnique.textContent = uniqueValues;
+
+                 profilePlaceholder.classList.add('hidden');
+                 profileDetailsDiv.classList.remove('hidden');
+            }
+
+
+            function showOperationConfig(opType) {
+                configPlaceholder.classList.add('hidden');
+                configDetailsDiv.classList.remove('hidden');
+                configDetailsDiv.innerHTML = ''; // Clear previous config
+
+                let configHTML = `<h4>Configure: ${opType.replace(/-/g, ' ')}</h4>`; // Replace all hyphens
+
+                // --- Add Specific Config Forms Based on opType ---
+                // This needs to be built out for each operation
+                switch (opType) {
+                    case 'remove-duplicates':
+                        configHTML += '<p>Select column(s) to check for duplicates:</p>';
+                        headers.forEach((h, i) => {
+                            configHTML += `<label><input type="checkbox" name="dedup_col" value="${i}"> ${h}</label><br>`;
+                        });
+                        configHTML += '<br><button type="button" class="btn btn-primary btn-sm" id="add-step-btn">Add Step</button>';
+                        break;
+                    case 'handle-missing':
+                         configHTML += '<p>Select column(s) with missing values:</p>';
+                         headers.forEach((h, i) => {
+                             configHTML += `<label><input type="checkbox" name="missing_col" value="${i}"> ${h}</label><br>`;
+                         });
+                         configHTML += '<p>Action:</p>';
+                         configHTML += '<select id="missing_action" style="margin-bottom: 5px;"><option value="remove_row">Remove Row</option><option value="fill_constant">Fill with Constant</option><option value="fill_mean">Fill with Mean (Numbers Only)</option><option value="fill_median">Fill with Median (Numbers Only)</option><option value="fill_mode">Fill with Mode</option></select><br>';
+                         configHTML += '<input type="text" id="fill_value" placeholder="Constant value (if selected)" style="display: none;"><br>';
+                         configHTML += '<button type="button" class="btn btn-primary btn-sm" id="add-step-btn">Add Step</button>';
+                         break;
+                     case 'standardize-case':
+                          configHTML += '<p>Select column(s) to standardize case:</p>';
+                          headers.forEach((h, i) => {
+                              configHTML += `<label><input type="checkbox" name="case_col" value="${i}"> ${h}</label><br>`;
+                          });
+                          configHTML += '<p>Case Type:</p>';
+                          configHTML += '<select id="case_type" style="margin-bottom: 5px;"><option value="upper">UPPERCASE</option><option value="lower">lowercase</option><option value="title">Title Case</option></select><br>';
+                          configHTML += '<button type="button" class="btn btn-primary btn-sm" id="add-step-btn">Add Step</button>';
+                         break;
+                     case 'trim-whitespace':
+                          configHTML += '<p>Select column(s) to trim whitespace:</p>';
+                          headers.forEach((h, i) => {
+                              configHTML += `<label><input type="checkbox" name="trim_col" value="${i}"> ${h}</label><br>`;
+                          });
+                          configHTML += '<br><button type="button" class="btn btn-primary btn-sm" id="add-step-btn">Add Step</button>';
+                          break;
+                    // Add cases for other operations...
+                    default:
+                        configHTML += '<p>Configuration for this operation is not yet implemented.</p>';
+                         // Disable add button if not implemented
+                         configHTML += '<button type="button" class="btn btn-primary btn-sm" disabled>Add Step</button>';
+                }
+
+                configDetailsDiv.innerHTML = configHTML;
+
+                // Add event listener for the dynamically added button
+                const addStepBtn = configDetailsDiv.querySelector('#add-step-btn');
+                 if (addStepBtn && !addStepBtn.disabled) {
+                     addStepBtn.addEventListener('click', () => collectAndAddStep(opType));
+                 }
+
+                 // Add specific listeners like the one for handle-missing constant value
+                 if (opType === 'handle-missing') {
+                    const actionSelect = document.getElementById('missing_action');
+                    const valueInput = document.getElementById('fill_value');
+                    if (actionSelect && valueInput) {
+                        actionSelect.onchange = () => {
+                            valueInput.style.display = (actionSelect.value === 'fill_constant') ? 'block' : 'none';
+                        };
+                        // Initial check in case 'fill_constant' is default (though it's not here)
+                        valueInput.style.display = (actionSelect.value === 'fill_constant') ? 'block' : 'none';
+                    }
+                 }
+            }
+
+             // Helper to get selected checkbox values by name within the config panel
+            function getConfigCheckboxValues(checkboxName) {
+                const selected = [];
+                configDetailsDiv.querySelectorAll(`input[name="${checkboxName}"]:checked`).forEach(cb => {
+                    selected.push(parseInt(cb.value, 10)); // Store column index
+                });
+                return selected;
+            }
+
+             // Collects config values based on opType and adds the step
+            function collectAndAddStep(type) {
+                let params = {};
+                 let selectedCols = [];
+
+                switch (type) {
+                    case 'remove-duplicates':
+                         selectedCols = getConfigCheckboxValues('dedup_col');
+                         if (selectedCols.length === 0) { alert("Please select at least one column for deduplication."); return; }
+                         params = { cols: selectedCols };
+                        break;
+                    case 'handle-missing':
+                         selectedCols = getConfigCheckboxValues('missing_col');
+                         const action = document.getElementById('missing_action').value;
+                         const fillValue = (action === 'fill_constant') ? document.getElementById('fill_value').value : null;
+                         if (selectedCols.length === 0) { alert("Please select column(s) for handling missing values."); return; }
+                         if (action === 'fill_constant' && fillValue === '') { alert("Please enter a constant value to fill."); return; }
+                         params = { cols: selectedCols, action: action };
+                         if (fillValue !== null) params.value = fillValue;
+                        break;
+                     case 'standardize-case':
+                         selectedCols = getConfigCheckboxValues('case_col');
+                         const caseType = document.getElementById('case_type').value;
+                          if (selectedCols.length === 0) { alert("Please select column(s) to standardize case."); return; }
+                         params = { cols: selectedCols, type: caseType };
+                         break;
+                     case 'trim-whitespace':
+                         selectedCols = getConfigCheckboxValues('trim_col');
+                          if (selectedCols.length === 0) { alert("Please select column(s) to trim whitespace."); return; }
+                         params = { cols: selectedCols };
+                         break;
+                    // Add cases for other operations...
+                    default:
+                        console.warn("Attempted to add step for unimplemented type:", type);
+                        return; // Don't add if not implemented
+                }
+
+                 addCleansingStep(type, params); // Add the collected step
+            }
+
+            function addCleansingStep(type, params) {
+                console.log("Adding step:", type, params);
+                 const step = { type, params };
+                 appliedOperations.push(step);
+                 renderAppliedSteps(); // Update the UI list
+
+                 // Clear config panel after adding
+                 configPlaceholder.classList.remove('hidden');
+                 configDetailsDiv.classList.add('hidden');
+                 configDetailsDiv.innerHTML = '';
+            }
+
+            function renderAppliedSteps() {
+                 const wasEmpty = appliedOperations.length === 1 && appliedStepsList.querySelector('#no-steps-li');
+
+                 if (wasEmpty) {
+                     appliedStepsList.innerHTML = ''; // Clear "no steps" message
+                     noStepsLi = null;
+                 }
+
+                 // Only add the latest step to the UI if it's new
+                 if (appliedOperations.length > 0) {
+                     const stepIndex = appliedOperations.length - 1;
+                     const step = appliedOperations[stepIndex];
+                     const li = document.createElement('li');
+
+                     // Create a more descriptive label
+                     let description = `${stepIndex + 1}. ${step.type.replace(/-/g, ' ')}`; // Add step number
+                     if(step.params?.cols) {
+                         description += ` on: ${step.params.cols.map(i => `'${headers[i] || `Index ${i}`}'`).join(', ')}`;
+                     }
+                     if(step.params?.action) description += ` (Action: ${step.params.action})`;
+                      if(step.params?.type) description += ` (Type: ${step.params.type})`;
+                      if(step.params?.value) description += ` (Value: ${step.params.value})`;
+                     // Add more details based on params...
+
+                     li.textContent = description;
+                     li.title = JSON.stringify(step.params); // Show params on hover
+
+                     const removeBtn = document.createElement('button');
+                     removeBtn.innerHTML = '×'; // Multiplication sign as 'X'
+                     removeBtn.title = 'Remove this step';
+                     removeBtn.classList.add('remove-step-btn');
+                     removeBtn.dataset.index = stepIndex;
+                     li.appendChild(removeBtn);
+
+                     appliedStepsList.appendChild(li);
+                 }
+
+                 // If the list became empty after removal, show the message
+                 if (appliedOperations.length === 0 && !appliedStepsList.querySelector('#no-steps-li')) {
+                    appliedStepsList.innerHTML = '<li id="no-steps-li">No operations applied yet.</li>';
+                    noStepsLi = document.getElementById('no-steps-li');
+                 }
+            }
+
+             function removeAppliedStep(indexToRemove) {
+                 appliedOperations.splice(indexToRemove, 1);
+                 // Re-render the entire list after removal to fix indices and descriptions
+                 appliedStepsList.innerHTML = ''; // Clear list
+                 noStepsLi = null; // Reset flag
+                 appliedOperations.forEach((step, i) => {
+                     // Re-add step with correct index (hacky way for this demo)
+                     const currentLength = appliedOperations.length;
+                     appliedOperations.length = i + 1; // Pretend it's the last step
+                     renderAppliedSteps(); // This function renders the last step
+                     appliedOperations.length = currentLength; // Restore length
+                 });
+
+                  if (appliedOperations.length === 0) { // Add back "no steps" if empty
+                    appliedStepsList.innerHTML = '<li id="no-steps-li">No operations applied yet.</li>';
+                    noStepsLi = document.getElementById('no-steps-li');
+                 }
+                 console.log("Removed step, remaining:", appliedOperations);
+             }
+
+
+            function runCleansingProcess() {
+                if (rawData.length === 0) {
+                    alert('Please load data first.');
+                    return;
+                }
+                 if (appliedOperations.length === 0) {
+                    alert('Please add at least one cleansing step.');
+                    return;
+                }
+
+                console.log("Running cleansing with operations:", appliedOperations);
+                processingIndicator.classList.remove('hidden');
+                resultsArea.classList.add('hidden'); // Hide previous results
+                runCleansingBtn.disabled = true;
+
+                // --- !!! SIMULATE CLEANSING PROCESS !!! ---
+                // In a real app, this would involve iterating through data
+                // and applying each operation from 'appliedOperations'.
+                // This requires significant logic based on operation type and params.
+                // We'll just simulate a delay and show dummy results.
+
+                // Simulate work using setTimeout
+                // Use Promise for cleaner async simulation (optional but good practice)
+                new Promise(resolve => setTimeout(resolve, 1500 + appliedOperations.length * 100)) // Longer delay based on steps
+                  .then(() => {
+                    processingIndicator.classList.add('hidden');
+                    resultsArea.classList.remove('hidden');
+                    runCleansingBtn.disabled = false;
+
+                    // Dummy Results - Generate based on applied steps list
+                    resultsList.innerHTML = `<li>Processed ${rawData.length} rows.</li>`;
+                    appliedOperations.forEach((step, i) => {
+                         resultsList.innerHTML += `<li>Step ${i+1} (${step.type}): Simulated application.</li>`;
+                    });
+                    resultsList.innerHTML += `<li>Cleansing simulation complete.</li>`;
+
+
+                    // Show dummy preview of "cleaned" data (just the original for now)
+                    // In real app: Call function displayCleanedDataPreview(headers, actualCleanedData);
+                    console.log("Simulated cleansing complete. Actual data transformation not implemented.");
+
+                }); // Simulate 1.5 seconds + processing time per step
+            }
+
+            // --- Utility Functions ---
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes' // Handle zero or non-numeric input
+
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

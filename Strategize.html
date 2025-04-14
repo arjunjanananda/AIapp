@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Product Strategist</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --bg-output-user: #0b3d7a; /* Blue for user */
+            --bg-output-ai: #2f2f2f; /* Darker gray for AI */
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #9b59b6; /* Purple for strategy */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .strategist-container {
+            max-width: 1100px; /* Slightly wider */
+            width: 100%;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            max-height: calc(100vh - 40px);
+            overflow: hidden; /* Prevent container overflow */
+        }
+
+        .strategist-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .strategist-header h1 {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .strategist-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Context Section --- */
+        .context-section {
+            background-color: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+         .context-section h2 {
+             font-size: 1.2em;
+             font-weight: 500;
+             margin-bottom: 15px;
+             color: var(--text-primary);
+         }
+         .context-form-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 15px;
+             margin-bottom: 15px;
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+         }
+         .form-group label {
+             margin-bottom: 5px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+         .form-group input[type="text"],
+         .form-group textarea {
+             width: 100%;
+             padding: 8px 10px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea {
+             min-height: 40px; /* Small initial height */
+             resize: vertical;
+         }
+          .form-group input:focus,
+          .form-group textarea:focus {
+              outline: none;
+              border-color: var(--accent-primary);
+              box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+         .context-actions {
+             text-align: right;
+         }
+
+        /* --- Interaction Area --- */
+        .interaction-area {
+             display: flex;
+             flex-direction: column;
+             flex-grow: 1; /* Takes remaining vertical space */
+             overflow: hidden; /* Contain children */
+             border: 1px solid var(--border-color);
+             border-radius: 6px;
+             background-color: var(--bg-tertiary);
+        }
+
+        .interaction-area.disabled-overlay::before { /* Overlay when context not set */
+             content: 'Please set the product context above to begin.';
+             position: absolute;
+             top: 0; left: 0; right: 0; bottom: 0;
+             background-color: rgba(42, 42, 42, 0.85); /* Semi-transparent dark overlay */
+             color: var(--text-primary);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 1.1em;
+             font-weight: 500;
+             z-index: 50; /* Above content */
+             border-radius: 6px; /* Match parent */
+             text-align: center;
+             padding: 20px;
+         }
+         .interaction-area.disabled-overlay {
+             position: relative; /* Needed for absolute positioning of ::before */
+             pointer-events: none; /* Prevent interaction with underlying elements */
+         }
+         .interaction-area.disabled-overlay > * {
+             filter: blur(2px); /* Blur underlying content */
+             pointer-events: none;
+         }
+
+
+         #strategy-output {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Make scrollable */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Space between messages */
+         }
+
+         /* --- Output Message Styling --- */
+          .output-message {
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 90%; /* Wider messages */
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 0.95em;
+            position: relative;
+             white-space: pre-wrap;
+         }
+
+         .output-message.user-prompt {
+            background-color: var(--bg-output-user);
+            color: #f0f0f0;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+             font-style: italic; /* Indicate it's a prompt */
+             opacity: 0.9;
+         }
+          .output-message.user-prompt strong { /* Prompt type */
+              font-style: normal;
+              font-weight: 600;
+              display: block;
+              margin-bottom: 5px;
+          }
+
+         .output-message.ai-response {
+            background-color: var(--bg-output-ai);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+         }
+         .output-message.ai-response h3 { /* Section titles in response */
+              font-size: 1.05em;
+              font-weight: 600;
+              color: var(--accent-secondary);
+              margin-top: 10px;
+              margin-bottom: 5px;
+              padding-bottom: 3px;
+              border-bottom: 1px solid var(--border-light);
+         }
+         .output-message.ai-response ul, .output-message.ai-response ol {
+              margin-left: 20px;
+              margin-top: 5px;
+              margin-bottom: 10px;
+         }
+         .output-message.ai-response code {
+              display: inline-block;
+              background-color: #1a1a1a;
+              padding: 1px 5px;
+              border-radius: 3px;
+              font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+              font-size: 0.9em;
+              border: 1px solid var(--border-color);
+          }
+
+
+          .output-message.info { /* For system messages */
+             background-color: transparent;
+             color: var(--text-secondary);
+             font-size: 0.85em;
+             text-align: center;
+             align-self: center;
+             max-width: 100%;
+             padding: 5px;
+         }
+
+         /* --- Loading Indicator --- */
+         #loading-indicator {
+             align-self: flex-start;
+             color: var(--text-secondary);
+             font-style: italic;
+             font-size: 0.9em;
+             padding: 5px 15px;
+         }
+         #loading-indicator span { /* Animated dots */
+             display: inline-block;
+             animation: loading-dots 1.2s infinite;
+             opacity: 0;
+         }
+         #loading-indicator span:nth-child(2) { animation-delay: 0.2s; }
+         #loading-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+         @keyframes loading-dots {
+             0%, 60%, 100% { opacity: 0; transform: translateY(0); }
+             30% { opacity: 1; transform: translateY(-2px); }
+         }
+
+         /* --- Prompt Buttons & Chat Input --- */
+         .strategy-input-area {
+             border-top: 1px solid var(--border-color);
+             padding: 10px;
+             background-color: var(--bg-tertiary);
+             flex-shrink: 0;
+         }
+
+         #strategy-prompts {
+             display: flex;
+             flex-wrap: wrap;
+             gap: 8px;
+             margin-bottom: 10px;
+             justify-content: center; /* Center prompts */
+         }
+
+         .prompt-btn {
+             padding: 6px 12px;
+             border: 1px solid var(--border-color);
+             background-color: var(--bg-input);
+             color: var(--text-secondary);
+             border-radius: 4px;
+             cursor: pointer;
+             font-size: 0.85em;
+             font-weight: 500;
+             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+             display: inline-flex;
+             align-items: center;
+             gap: 5px;
+         }
+         .prompt-btn:hover {
+             background-color: #333;
+             color: var(--text-primary);
+             border-color: var(--border-light);
+         }
+          .prompt-btn:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+         }
+          .prompt-btn i {
+             font-size: 0.9em;
+         }
+
+         .chat-input-area {
+            display: flex;
+            /* Removed padding, handled by parent */
+         }
+
+         #chat-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px; /* Pill shape */
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1em;
+            margin-right: 10px;
+            resize: none;
+            min-height: 42px;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.5;
+         }
+         #chat-input:focus {
+             outline: none;
+             border-color: var(--accent-primary);
+             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+         }
+          #chat-input:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+         }
+
+         #send-button {
+             padding: 0 15px;
+             font-size: 1.2em;
+             background-color: var(--accent-primary);
+             color: white;
+             border: none;
+             border-radius: 50%;
+             cursor: pointer;
+             height: 42px;
+             width: 42px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             transition: background-color 0.2s ease;
+             align-self: flex-end;
+         }
+         #send-button:hover {
+             background-color: #3a7bc8;
+         }
+          #send-button:disabled {
+              background-color: var(--border-light);
+              cursor: not-allowed;
+         }
+
+        /* General Button Style */
+         .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            font-family: var(--font-family);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        .btn-primary:hover { background-color: #3a7bc8; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .disabled { opacity: 0.6; pointer-events: none; }
+    </style>
+
+</head>
+<body>
+
+    <div class="strategist-container">
+        <header class="strategist-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-lightbulb"></i> Product Strategist</h1>
+        </header>
+
+        <section class="context-section">
+            <h2>Define Product Context</h2>
+            <div class="context-form-grid">
+                <div class="form-group">
+                    <label for="product-name">Product/Service Name*</label>
+                    <input type="text" id="product-name" placeholder="e.g., AI Swag Platform">
+                </div>
+                <div class="form-group">
+                    <label for="target-audience">Target Audience*</label>
+                    <input type="text" id="target-audience" placeholder="e.g., Small Businesses, Marketing Teams">
+                </div>
+                 <div class="form-group" style="grid-column: 1 / -1;"> <!-- Span full width -->
+                    <label for="key-goals">Key Goals/Objectives*</label>
+                    <textarea id="key-goals" rows="2" placeholder="e.g., Increase market share by 10%, Improve user retention, Launch internationally"></textarea>
+                </div>
+            </div>
+             <div class="context-actions">
+                <button id="set-context-btn" class="btn btn-primary"><i class="fas fa-check"></i> Set Context & Start</button>
+             </div>
+        </section>
+
+        <!-- Interaction Area: Disabled until context is set -->
+        <div id="interaction-area" class="interaction-area disabled-overlay">
+
+            <div id="strategy-output" aria-live="polite">
+                 <!-- Messages and AI responses appear here -->
+                 <div class="output-message info">Set the product context above to activate strategy tools.</div>
+            </div>
+
+             <div id="loading-indicator" class="hidden">
+                 AI is analyzing<span>.</span><span>.</span><span>.</span>
+             </div>
+
+             <div class="strategy-input-area">
+                <div id="strategy-prompts">
+                     <button class="prompt-btn" data-prompt="trends"><i class="fas fa-chart-line"></i> Analyze Market Trends</button>
+                     <button class="prompt-btn" data-prompt="competitors"><i class="fas fa-users"></i> Analyze Competitors</button>
+                     <button class="prompt-btn" data-prompt="features"><i class="fas fa-plus-circle"></i> Suggest New Features</button>
+                     <button class="prompt-btn" data-prompt="swot"><i class="fas fa-th"></i> Generate SWOT Analysis</button>
+                     <button class="prompt-btn" data-prompt="positioning"><i class="fas fa-bullseye"></i> Define Value Proposition</button>
+                 </div>
+                 <div class="chat-input-area">
+                     <textarea id="chat-input" placeholder="Ask a follow-up question or provide more details..." rows="1"></textarea>
+                     <button id="send-button" title="Send Message"><i class="fas fa-paper-plane"></i></button>
+                 </div>
+             </div>
+
+        </div> <!-- End Interaction Area -->
+
+    </div> <!-- End strategist Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const productNameInput = document.getElementById('product-name');
+            const targetAudienceInput = document.getElementById('target-audience');
+            const keyGoalsInput = document.getElementById('key-goals');
+            const setContextBtn = document.getElementById('set-context-btn');
+            const contextSection = document.querySelector('.context-section'); // To potentially disable fields later
+
+            const interactionArea = document.getElementById('interaction-area');
+            const strategyOutput = document.getElementById('strategy-output');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const promptButtons = document.querySelectorAll('.prompt-btn');
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-button');
+
+            // --- State ---
+            let productContext = null;
+            let isAiThinking = false;
+
+            // --- Functions ---
+
+            function setProductContext() {
+                const name = productNameInput.value.trim();
+                const audience = targetAudienceInput.value.trim();
+                const goals = keyGoalsInput.value.trim();
+
+                if (!name || !audience || !goals) {
+                    alert("Please fill in all product context fields.");
+                    return;
+                }
+
+                productContext = { name, audience, goals };
+                console.log("Product Context Set:", productContext);
+
+                // Enable interaction area
+                interactionArea.classList.remove('disabled-overlay');
+                 // Enable inputs/buttons inside interaction area
+                 enableInteraction(true);
+
+                // Disable context inputs (optional, prevents accidental changes)
+                 productNameInput.disabled = true;
+                 targetAudienceInput.disabled = true;
+                 keyGoalsInput.disabled = true;
+                 setContextBtn.disabled = true;
+                 setContextBtn.textContent = "Context Set"; // Change button text
+
+                 // Add confirmation message to output
+                 strategyOutput.innerHTML = ''; // Clear initial message
+                 displayInfoMessage(`Context set for product: "${escapeHtml(name)}". You can now use the prompts or ask questions.`);
+                 chatInput.focus(); // Focus chat input
+            }
+
+            function enableInteraction(enable) {
+                 promptButtons.forEach(btn => btn.disabled = !enable);
+                 chatInput.disabled = !enable;
+                 sendButton.disabled = !enable;
+                 // Also remove pointer-events none if it was added
+                 interactionArea.style.pointerEvents = enable ? 'auto' : 'none';
+                 // Reset potential blur filter
+                 const children = interactionArea.querySelectorAll(':scope > *'); // Direct children
+                 children.forEach(child => child.style.filter = enable ? '' : 'blur(2px)');
+            }
+
+             function handlePromptClick(event) {
+                if (isAiThinking || !productContext) return;
+                const button = event.currentTarget;
+                const promptType = button.dataset.prompt;
+                let promptText = '';
+
+                switch(promptType) {
+                    case 'trends': promptText = `Analyze current market trends relevant to a product like "${productContext.name}" targeting "${productContext.audience}".`; break;
+                    case 'competitors': promptText = `Identify and analyze key competitors for "${productContext.name}". What are their strengths and weaknesses?`; break;
+                    case 'features': promptText = `Suggest 3-5 innovative features for "${productContext.name}" based on its goals (${productContext.goals}) and target audience (${productContext.audience}).`; break;
+                    case 'swot': promptText = `Generate a SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) for "${productContext.name}".`; break;
+                    case 'positioning': promptText = `Help define a clear value proposition and market positioning statement for "${productContext.name}".`; break;
+                    default: console.error("Unknown prompt type:", promptType); return;
+                }
+
+                displayUserMessage(promptText, `Prompt: ${button.textContent.trim()}`); // Display formatted prompt
+                callGeminiApi(promptText, promptType); // Call simulated API
+            }
+
+             function sendUserQuery() {
+                 if (isAiThinking || !productContext) return;
+                 const userQuery = chatInput.value.trim();
+                 if (!userQuery) return;
+
+                 displayUserMessage(userQuery); // Display user's raw query
+                 chatInput.value = ''; // Clear input
+                 autoResizeTextarea(chatInput); // Reset height
+                 callGeminiApi(userQuery, 'custom'); // Call simulated API
+             }
+
+             function callGeminiApi(promptText, type) {
+                 console.log(`Simulating API call for type: ${type}`);
+                 showLoading(true);
+
+                 // *** SIMULATE API CALL to Gemini ***
+                 // In a real app:
+                 // 1. Construct the request payload including promptText, productContext, maybe chat history.
+                 // 2. Send the request to your backend, which relays it to the Gemini API.
+                 // 3. Receive the response from your backend.
+
+                 setTimeout(() => {
+                     const simulatedResponse = getSimulatedResponse(promptText, type, productContext);
+                     showLoading(false);
+                     displayAiResponse(simulatedResponse);
+                 }, 1500 + Math.random() * 2000); // Simulate network + processing time
+             }
+
+
+            function displayUserMessage(text, promptLabel = "Your Query:") {
+                 const messageDiv = document.createElement('div');
+                 messageDiv.classList.add('output-message', 'user-prompt');
+                 // Displaying the prompt text clearly
+                 messageDiv.innerHTML = `<strong>${escapeHtml(promptLabel)}</strong>${escapeHtml(text)}`;
+                 strategyOutput.appendChild(messageDiv);
+                 scrollToBottom();
+             }
+
+             function displayAiResponse(responseObject) { // Expecting { title: '...', content: '...' }
+                 const messageDiv = document.createElement('div');
+                 messageDiv.classList.add('output-message', 'ai-response');
+
+                 // Use innerHTML carefully after escaping or for trusted simulated content
+                 // A more robust solution would parse markdown or a structured response
+                 let contentHtml = escapeHtml(responseObject.content)
+                    .replace(/\n\*/g, '\n<li>') // Basic unordered list start
+                    .replace(/\n\d\./g, '\n<li>') // Basic ordered list start (doesn't preserve number)
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold text
+
+                 // Wrap list items if any were created
+                 if (contentHtml.includes('<li>')) {
+                      contentHtml = contentHtml.replace(/(<li>.*?(\n|$))+/g, (match) => `<ul>${match.replace(/<li>/g,'<li>')}</ul>`);
+                 }
+
+                 messageDiv.innerHTML = `<h3>${escapeHtml(responseObject.title)}</h3>${contentHtml}`; // Use innerHTML for lists/bold
+
+                 strategyOutput.appendChild(messageDiv);
+                 scrollToBottom();
+             }
+
+            function displayInfoMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('output-message', 'info');
+                messageDiv.textContent = text;
+                strategyOutput.appendChild(messageDiv);
+                scrollToBottom();
+            }
+
+
+             function showLoading(isLoading) {
+                 isAiThinking = isLoading;
+                 loadingIndicator.classList.toggle('hidden', !isLoading);
+                 // Disable all input methods while loading
+                 promptButtons.forEach(btn => btn.disabled = isLoading);
+                 chatInput.disabled = isLoading;
+                 sendButton.disabled = isLoading;
+                 if (isLoading) {
+                      scrollToBottom(); // Ensure loading indicator is visible
+                 }
+             }
+
+             function scrollToBottom() {
+                 setTimeout(() => { strategyOutput.scrollTop = strategyOutput.scrollHeight; }, 0);
+             }
+
+             function autoResizeTextarea(textarea) {
+                 textarea.style.height = 'auto';
+                 const maxHeight = parseInt(window.getComputedStyle(textarea).maxHeight, 10);
+                 const requiredHeight = textarea.scrollHeight;
+                 textarea.style.height = `${Math.min(requiredHeight, maxHeight) + 2}px`;
+             }
+
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 return String(unsafe)
+                      .replace(/&/g, "&")
+                      .replace(/</g, "<")
+                      .replace(/>/g, ">")
+                      .replace(/"/g, """)
+                      .replace(/'/g, "'");
+             }
+
+            function getSimulatedResponse(prompt, type, context) {
+                // Simulate varied responses based on the type/prompt
+                let title = "Analysis Result";
+                let content = "Processing your request...\n\n";
+
+                switch(type) {
+                    case 'trends':
+                        title = `Market Trends for ${context.name}`;
+                        content = `Based on current data, key trends impacting the "${context.audience}" market include:\n*   Trend 1: Increasing demand for sustainable solutions.\n*   Trend 2: Rise of AI-driven personalization.\n*   Trend 3: Shift towards subscription models.\n\nThese suggest opportunities in [Specific Area] and potential challenges from [Specific Factor].`;
+                        break;
+                    case 'competitors':
+                        title = `Competitor Analysis for ${context.name}`;
+                        content = `Primary competitors identified:\n1.  **Competitor A:** Strengths - Established brand, large user base. Weaknesses - Slow innovation, higher price.\n2.  **Competitor B:** Strengths - Niche focus, strong community. Weaknesses - Limited feature set, smaller market reach.\n3.  **Emerging Startup C:** Strengths - Agile, potentially disruptive tech. Weaknesses - Unproven, lacks funding.\n\nConsider focusing on [Differentiator] to compete effectively.`;
+                        break;
+                    case 'features':
+                        title = `Suggested Features for ${context.name}`;
+                        content = `To achieve goals like "${context.goals.split(',')[0].trim()}", consider these features:\n*   **Feature 1 (Innovation):** AI-powered recommendation engine based on user behavior.\n*   **Feature 2 (Retention):** Enhanced user profile customization and progress tracking.\n*   **Feature 3 (Efficiency):** Integration with [Popular Tool relevant to audience].\n*   **Feature 4 (Engagement):** Gamified onboarding process.`;
+                        break;
+                    case 'swot':
+                        title = `SWOT Analysis: ${context.name}`;
+                        content = `**Strengths:**\n*   [Strength 1 related to potential product type]\n*   [Strength 2, e.g., Strong team expertise]\n\n**Weaknesses:**\n*   [Weakness 1, e.g., New market entry]\n*   [Weakness 2, e.g., Limited initial budget]\n\n**Opportunities:**\n*   [Opportunity 1 based on trends/audience]\n*   [Opportunity 2, e.g., Partnership potential]\n\n**Threats:**\n*   [Threat 1, e.g., Intense competition]\n*   [Threat 2, e.g., Changing regulations]`;
+                        break;
+                    case 'positioning':
+                         title = `Value Proposition & Positioning for ${context.name}`;
+                         content = `**Value Proposition:** For **${context.audience}** who struggle with [Problem], **${context.name}** provides [Key Benefit/Solution] unlike [Competitor/Alternative], enabling them to achieve [Desirable Outcome].\n\n**Positioning Statement:** ${context.name} is the leading [Category] solution designed specifically for ${context.audience} seeking [Key Benefit].`;
+                         break;
+                    case 'custom':
+                    default:
+                         title = "Response to Your Query";
+                         content = `Regarding your question about "${prompt.substring(0, 50)}...", based on the provided context for ${context.name}:\n\n[Generate a plausible-sounding paragraph or two that seems relevant to typical strategy questions, potentially mentioning the audience or goals].\n\nThis analysis suggests focusing on [Actionable Insight].`;
+                         break;
+                }
+                return { title, content };
+            }
+
+
+            // --- Initial Setup ---
+            enableInteraction(false); // Disable interaction area initially
+             autoResizeTextarea(chatInput); // Set initial height
+
+             // Event Listeners
+            setContextBtn.addEventListener('click', setProductContext);
+            promptButtons.forEach(btn => btn.addEventListener('click', handlePromptClick));
+            sendButton.addEventListener('click', sendUserQuery);
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendUserQuery();
+                }
+                 autoResizeTextarea(chatInput);
+            });
+             chatInput.addEventListener('input', () => { // Also resize on input/paste
+                 autoResizeTextarea(chatInput);
+             });
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

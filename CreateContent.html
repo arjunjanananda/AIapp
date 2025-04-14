@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Content Creator with Tasks</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --bg-chat-user: #0b3d7a;
+            --bg-chat-ai: #2f2f2f;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #1abc9c; /* Teal for creation */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex; /* Use flex for full height layout */
+            flex-direction: column;
+        }
+
+        .content-creator-container {
+            max-width: 900px; /* Good width for chat */
+            width: 100%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Allow container to grow */
+            max-height: calc(100vh - 40px); /* Limit height relative to viewport */
+        }
+
+        .creator-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px; /* Space below header */
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        .creator-header h1 {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .creator-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Chat Section --- */
+         .chat-section {
+            flex-grow: 1; /* Takes remaining vertical space */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent content overflow */
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-tertiary);
+         }
+
+         #chat-display {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Make scrollable */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Space between messages */
+         }
+
+         .message {
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 80%; /* Slightly wider messages allowed */
+            line-height: 1.5;
+            word-wrap: break-word; /* Wrap long words */
+            font-size: 0.95em;
+            position: relative;
+             white-space: pre-wrap; /* Respect newlines in messages */
+         }
+
+         .message.user {
+            background-color: var(--bg-chat-user);
+            color: #f0f0f0;
+            border-bottom-right-radius: 4px; /* Chat bubble shape */
+            align-self: flex-end; /* Align user messages to the right */
+         }
+
+         .message.ai {
+            background-color: var(--bg-chat-ai);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px; /* Chat bubble shape */
+            align-self: flex-start; /* Align AI messages to the left */
+         }
+          .message.ai code {
+              display: block;
+              background-color: #1a1a1a;
+              padding: 8px 12px;
+              border-radius: 4px;
+              font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+              font-size: 0.9em;
+              margin-top: 8px;
+              border: 1px solid var(--border-color);
+          }
+          .message.ai ul, .message.ai ol {
+              margin-left: 20px;
+              margin-top: 5px;
+              margin-bottom: 5px;
+          }
+
+
+          .message.info { /* For system messages */
+             background-color: transparent;
+             color: var(--text-secondary);
+             font-size: 0.85em;
+             text-align: center;
+             align-self: center;
+             max-width: 100%;
+             padding: 5px;
+         }
+
+
+         #typing-indicator {
+             align-self: flex-start;
+             color: var(--text-secondary);
+             font-style: italic;
+             font-size: 0.9em;
+             padding: 5px 15px;
+         }
+         #typing-indicator span { /* Animated dots */
+             display: inline-block;
+             animation: typing-dots 1.2s infinite;
+             opacity: 0;
+         }
+         #typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+         #typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+         @keyframes typing-dots {
+             0%, 60%, 100% { opacity: 0; transform: translateY(0); }
+             30% { opacity: 1; transform: translateY(-2px); }
+         }
+
+         /* --- NEW: Task Selection --- */
+        .task-selection-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 10px 5px 10px; /* Padding around tabs */
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-tertiary); /* Match chat background */
+             flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .task-tab-btn {
+             padding: 6px 12px;
+             border: 1px solid var(--border-color);
+             background-color: var(--bg-input);
+             color: var(--text-secondary);
+             border-radius: 15px; /* Rounded pill shape */
+             cursor: pointer;
+             font-size: 0.85em;
+             font-weight: 500;
+             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+             display: inline-flex;
+             align-items: center;
+             gap: 5px;
+        }
+         .task-tab-btn i {
+            font-size: 0.9em; /* Slightly smaller icon */
+         }
+
+        .task-tab-btn:hover {
+            background-color: #333;
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+
+        .task-tab-btn.active {
+            background-color: var(--accent-secondary);
+            color: var(--bg-primary); /* Dark text on light button */
+            border-color: var(--accent-secondary);
+            font-weight: 600;
+        }
+        /* --- END: Task Selection --- */
+
+
+         .chat-input-area {
+            display: flex;
+            padding: 10px;
+            /* border-top: 1px solid var(--border-color); Removed - border is above tabs now */
+            background-color: var(--bg-tertiary); /* Match chat section bg */
+            flex-shrink: 0; /* Prevent shrinking */
+         }
+
+         #chat-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px; /* Pill shape */
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1em;
+            margin-right: 10px;
+            resize: none; /* Disable textarea resize */
+            min-height: 42px; /* Start height */
+            max-height: 150px; /* Limit growth */
+            overflow-y: auto; /* Allow scroll within textarea */
+            line-height: 1.5;
+         }
+         #chat-input:focus {
+             outline: none;
+             border-color: var(--accent-primary);
+             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+         }
+          #chat-input:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+         }
+
+         #send-button {
+             padding: 0 15px; /* Adjust padding for icon */
+             font-size: 1.2em; /* Make icon slightly larger */
+             background-color: var(--accent-primary);
+             color: white;
+             border: none;
+             border-radius: 50%; /* Circular button */
+             cursor: pointer;
+             height: 42px;
+             width: 42px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             transition: background-color 0.2s ease;
+             align-self: flex-end; /* Align button to bottom if textarea grows */
+         }
+         #send-button:hover {
+             background-color: #3a7bc8;
+         }
+          #send-button:disabled {
+              background-color: var(--border-light);
+              cursor: not-allowed;
+         }
+
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="content-creator-container">
+        <header class="creator-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-magic-wand-sparkles"></i> Create Content</h1>
+        </header>
+
+        <section id="chat-section" class="chat-section">
+             <div id="chat-display" aria-live="polite">
+                 <!-- Messages will appear here -->
+                 <div class="message info">Select a task below or describe the content you need.</div>
+             </div>
+
+             <div id="typing-indicator" class="hidden">
+                 AI is creating<span>.</span><span>.</span><span>.</span>
+             </div>
+
+             <!-- Task Selection Tabs -->
+             <div class="task-selection-area">
+                 <button class="task-tab-btn active" data-task="general"> <!-- Default active -->
+                     <i class="fas fa-comment-dots"></i> General
+                 </button>
+                 <button class="task-tab-btn" data-task="reply">
+                     <i class="fas fa-reply"></i> Reply to email
+                 </button>
+                 <button class="task-tab-btn" data-task="draft">
+                     <i class="fas fa-pencil-alt"></i> Draft Comm's
+                 </button>
+                 <button class="task-tab-btn" data-task="revise">
+                     <i class="fas fa-edit"></i> Revise content
+                 </button>
+                 <button class="task-tab-btn" data-task="translate">
+                     <i class="fas fa-language"></i> Translate
+                 </button>
+                 <button class="task-tab-btn" data-task="paraphrase">
+                     <i class="fas fa-retweet"></i> Paraphrase
+                 </button>
+             </div>
+             <!-- End Task Selection Tabs -->
+
+
+             <div class="chat-input-area">
+                 <!-- Using textarea for potentially longer inputs -->
+                 <textarea id="chat-input" placeholder="Describe the content you need..." rows="1"></textarea>
+                 <button id="send-button" title="Send Request"><i class="fas fa-paper-plane"></i></button>
+             </div>
+        </section>
+
+    </div> <!-- End content-creator Container -->
+
+       <script>
+           document.addEventListener('DOMContentLoaded', () => {
+               // --- DOM Elements ---
+               const chatDisplay = document.getElementById('chat-display');
+               const chatInput = document.getElementById('chat-input');
+               const sendButton = document.getElementById('send-button');
+               const typingIndicator = document.getElementById('typing-indicator');
+               const taskTabButtons = document.querySelectorAll('.task-tab-btn'); // Get all tab buttons
+
+               let isAiTyping = false;
+               let currentTask = 'general'; // Default task
+
+               // --- Placeholders for Tasks ---
+               const taskPlaceholders = {
+                   general: "Describe the content you need (e.g., blog post ideas, brainstorm slogans...)",
+                   reply: "Paste the email you want to reply to, and optionally add context for the reply...",
+                   draft: "Describe the communication you want to draft (e.g., 'draft a memo about the new policy')...",
+                   revise: "Paste the content you want to revise, and explain how you want it changed...",
+                   translate: "Paste the text to translate, and specify the target language (e.g., 'translate to Spanish')...",
+                   paraphrase: "Paste the text you want to paraphrase or reword..."
+               };
+
+               // --- Event Listeners ---
+
+               // Task Tab Button Clicks - CORRECTED
+               taskTabButtons.forEach(button => {
+                   button.addEventListener('click', (event) => { // Use event parameter
+                       console.log("Tab button clicked:", event.currentTarget); // Log which button
+
+                       // Remove active class from all buttons
+                       taskTabButtons.forEach(btn => btn.classList.remove('active'));
+                       // Add active class to the clicked button
+                       event.currentTarget.classList.add('active'); // Use event.currentTarget
+
+                       // Update current task from the clicked button's data attribute
+                       currentTask = event.currentTarget.dataset.task;
+                       console.log("Selected task:", currentTask);
+
+                       // Update placeholder text
+                       const newPlaceholder = taskPlaceholders[currentTask] || taskPlaceholders['general'];
+                       console.log("Setting placeholder to:", newPlaceholder);
+                       chatInput.placeholder = newPlaceholder;
+
+                       // Focus the input
+                       chatInput.focus();
+                   });
+               });
+
+               // Send Button Click
+               sendButton.addEventListener('click', sendMessage);
+
+               // Enter Key in Input (allow Shift+Enter for newlines in textarea)
+               chatInput.addEventListener('keydown', (e) => {
+                   if (e.key === 'Enter' && !e.shiftKey) {
+                       e.preventDefault(); // Prevent default newline
+                       sendMessage();
+                   }
+                   autoResizeTextarea(chatInput); // Resize on keydown
+               });
+
+               // Auto-resize textarea on input
+                chatInput.addEventListener('input', () => {
+                   autoResizeTextarea(chatInput);
+                });
+
+
+               // --- Functions --- (Keep these the same as before)
+
+               function sendMessage() {
+                   const userMessage = chatInput.value.trim();
+                   if (!userMessage || isAiTyping) {
+                       return; // Don't send empty messages or while AI is typing
+                   }
+
+                   addMessageToChat(userMessage, 'user');
+                   chatInput.value = ''; // Clear input field
+                   autoResizeTextarea(chatInput); // Reset height after clearing
+                   showTypingIndicator(true);
+
+                   // --- *** SIMULATE BACKEND PROCESSING & AI RESPONSE *** ---
+                   setTimeout(() => {
+                       const aiResponse = getSimulatedResponse(userMessage, currentTask);
+                       showTypingIndicator(false);
+                       addMessageToChat(aiResponse, 'ai');
+                   }, 1800 + Math.random() * 1200); // Simulate variable delay
+               }
+
+               function addMessageToChat(text, sender) {
+                    const initialInfo = chatDisplay.querySelector('.message.info');
+                    if (initialInfo) initialInfo.remove();
+
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', sender);
+
+                    if (sender === 'ai' && (text.includes('```') || text.match(/^\s*[\*\-]\s/m) || text.match(/^\s*\d+\.\s/m))) {
+                       let formattedText = escapeHtml(text)
+                           .replace(/```([\s\S]*?)```/g, (match, code) => `<code>${code.trim()}</code>`)
+                           .replace(/^\s*([\*\-])\s+(.*)/gm, '<li>$2</li>')
+                           .replace(/^\s*(\d+)\.\s+(.*)/gm, '<li>$2</li>');
+                        formattedText = formattedText.replace(/(<li>.*?<\/li>\s*)+/g, (match) => `<ul>${match}</ul>`);
+                        messageElement.innerHTML = formattedText;
+                    } else {
+                        messageElement.textContent = text;
+                    }
+                    chatDisplay.appendChild(messageElement);
+                    scrollToBottom();
+               }
+
+               function showTypingIndicator(show) {
+                   isAiTyping = show;
+                   typingIndicator.classList.toggle('hidden', !show);
+                   chatInput.disabled = show;
+                   sendButton.disabled = show;
+                   if (show) {
+                        scrollToBottom();
+                   }
+               }
+
+               function scrollToBottom() {
+                   setTimeout(() => {
+                       chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                   }, 0);
+               }
+
+                function autoResizeTextarea(textarea) {
+                    textarea.style.height = 'auto';
+                    const maxHeight = parseInt(window.getComputedStyle(textarea).maxHeight, 10);
+                    const requiredHeight = textarea.scrollHeight;
+                    textarea.style.height = `${Math.min(requiredHeight, maxHeight) + (requiredHeight < maxHeight ? 2 : 0)}px`;
+                }
+
+               function getSimulatedResponse(userMessage, task) {
+                   const lowerMessage = userMessage.toLowerCase();
+                    console.log(`Simulating response for task: ${task}`);
+
+                   switch(task) {
+                        case 'reply':
+                            if (lowerMessage.includes("schedule") || lowerMessage.includes("meeting")) { return `Subject: Re: [Original Subject]\n\nHi [Sender Name],\n\nThanks for reaching out. Yes, I'm available to meet on [Suggest Date/Time] or [Suggest Alternative Date/Time]. Does either of those work for you?\n\nBest,\n[Your Name]`; }
+                            else if (lowerMessage.includes("interested") || lowerMessage.includes("learn more")) { return `Subject: Re: [Original Subject]\n\nHi [Sender Name],\n\nThank you for your interest! I've attached some more information about [Topic]. Please let me know if you have any specific questions I can answer.\n\nRegards,\n[Your Name]`; }
+                            else { return `Subject: Re: [Original Subject]\n\nHi [Sender Name],\n\nGot your email, thanks! Regarding your point about [Mention something from pasted email], my thoughts are [Brief point].\n\nLet me know what you think.\n\nThanks,\n[Your Name]`; }
+                       case 'draft':
+                            if (lowerMessage.includes("memo") || lowerMessage.includes("announcement")) { return `**MEMORANDUM**\n\n**TO:** All Staff\n**FROM:** [Your Name/Dept]\n**DATE:** [Current Date]\n**SUBJECT:** [Subject of Memo based on prompt]\n\nPlease be advised that [Details of announcement based on prompt]. This will take effect on [Date].\n\n[Add any further details or required actions].\n\nPlease contact [Contact Person/Dept] if you have questions.`; }
+                            else if (lowerMessage.includes("social media post") || lowerMessage.includes("tweet")) { return `Here's a draft social media post:\n\nExciting news! 🎉 [Brief announcement based on prompt]. Learn more here: [Link]\n#[RelevantHashtag1] #[RelevantHashtag2]`; }
+                            else { return `Okay, here's a draft communication based on your request:\n\n[Start of draft communication text, e.g., "Dear Team," or a headline].\n\n[Body of the communication based on the prompt...]`; }
+                       case 'revise':
+                            if (lowerMessage.includes("formal") || lowerMessage.includes("professional")) { return `Okay, here is a more formal revision of the text you provided:\n\n"[Slightly more formal rephrasing of common phrases from the likely input]..."\n\nI've adjusted the tone and vocabulary for a professional context.`; }
+                            else if (lowerMessage.includes("concise") || lowerMessage.includes("shorter")) { return `Here's a more concise version:\n\n"[Significantly shortened version, hitting key points from likely input]..."\n\nI've removed redundant phrases and focused on the main message.`; }
+                            else { return `Based on your revision request, here's an updated version of the text:\n\n"[Text that sounds slightly different from typical input, indicating revision]..."`; }
+                       case 'translate':
+                            const targetLangMatch = lowerMessage.match(/translate to (\w+)/);
+                            const targetLang = targetLangMatch ? targetLangMatch[1] : "the target language";
+                            return `[Simulated translation of the provided text into ${targetLang}]\n\n(Note: Actual translation requires a dedicated service.)`;
+                       case 'paraphrase':
+                             return `Here's another way to phrase that:\n\n"[Text rephrased using slightly different vocabulary and sentence structure, conveying the same core meaning as likely input]..."`;
+                       case 'general':
+                       default:
+                           if (lowerMessage.includes("brainstorm") && lowerMessage.includes("ideas")) { const topic = lowerMessage.split("ideas for")[1]?.trim() || "a new project"; return `Okay, brainstorming ideas for ${topic}:\n\n*   Idea 1: Focus on [Core Concept A]\n*   Idea 2: Explore [Related Concept B]\n*   Idea 3: Combine [Concept A] and [Concept C]\n*   Idea 4: Target [Specific Audience/Niche]\n*   Idea 5: Leverage [Existing Resource/Technology] in a new way.\n\nLet me know if you'd like me to elaborate on any of these!`; }
+                           else if (lowerMessage.includes("blog post") || lowerMessage.includes("article")) { const blogTopic = lowerMessage.split("about")[1]?.trim() || "a relevant topic"; return `Okay, here's a draft outline for a blog post about ${blogTopic}:\n\n**Title:** [Catchy Title Related to ${blogTopic}]\n\n**Introduction:**\n*   Hook the reader (statistic, question, anecdote).\n*   Briefly introduce ${blogTopic} and its importance.\n\n**Section 1:** [Key Point 1]\n*   Explain the concept.\n*   Provide examples or data.\n\n**Section 2:** [Key Point 2]\n*   Discuss challenges or benefits.\n*   Offer insights.\n\n**Section 3:** [Key Point 3 (Optional)]\n*   Future trends or related ideas.\n\n**Conclusion:**\n*   Summarize main points.\n*   Call to action (e.g., leave a comment, share).`; }
+                           else if (lowerMessage.includes("slogan") || lowerMessage.includes("tagline")) { const brand = lowerMessage.split("for")[1]?.trim() || "a new product"; return `Here are a few slogan ideas for ${brand}:\n\n*   ${brand}: Experience the Difference.\n*   Simple. Powerful. ${brand}.\n*   ${brand}: Your [Benefit] Solution.\n*   The Future is Here. It's ${brand}.\n*   Unlock Your Potential with ${brand}.`; }
+                           else if (lowerMessage.includes("code") || lowerMessage.includes("python") || lowerMessage.includes("javascript")) { return "Sure, here's a simple example snippet related to your request:\n\n```python\ndef greet(name):\n  print(f\"Hello, {name}!\")\n\ngreet(\"AI Swag User\")\n```\n\nRemember to adapt this to your specific needs."; }
+                           else if (lowerMessage.includes("hello") || lowerMessage.includes("hi")) { return "Hello! How can I help you create content today? Select a task or describe what you need."; }
+                           else { return `Okay, I can help with that. Here's a starting point based on your request:\n\n"[Plausible generated sentence or two related to the request...]"\n\nLet me know if you'd like me to expand on this or try a different approach. (Simulated response)`; }
+                    } // End switch
+               }
+
+                function escapeHtml(unsafe) {
+                    if (unsafe === null || typeof unsafe === 'undefined') return '';
+                    return String(unsafe)
+                         .replace(/&/g, "&")
+                         .replace(/</g, "<")
+                         .replace(/>/g, ">")
+                         .replace(/"/g, """)
+                         .replace(/'/g, "'");
+                }
+
+
+               // --- Initial State ---
+                const initialActiveButton = document.querySelector('.task-tab-btn.active');
+                if (initialActiveButton) {
+                    currentTask = initialActiveButton.dataset.task;
+                    chatInput.placeholder = taskPlaceholders[currentTask] || taskPlaceholders['general'];
+                } else {
+                    // Fallback if no button has 'active' class initially
+                    const defaultButton = document.querySelector('.task-tab-btn[data-task="general"]');
+                    if (defaultButton) defaultButton.classList.add('active'); // Ensure default is active visually too
+                    chatInput.placeholder = taskPlaceholders['general'];
+                }
+                autoResizeTextarea(chatInput); // Set initial height correctly
+
+           }); // End DOMContentLoaded
+       </script>
+
+   </body>
+</html>
+
+</body>
+</html>

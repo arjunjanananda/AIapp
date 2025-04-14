@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Board Meeting Assistant</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #546e7a; /* Blue Grey for corporate/board */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --card-border: #444;
+            --danger-color: #e74c3c; /* Red for pending action items */
+            --success-color: #2ecc71; /* Green for completed */
+            --warning-color: #f39c12; /* Orange for in progress */
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .assistant-container {
+            max-width: 1000px; /* Good width */
+            margin: 20px auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .assistant-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px; /* Space below header */
+        }
+
+        .assistant-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .assistant-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* --- Step Section Styling --- */
+         .step-section {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+         .step-section h2 {
+             font-size: 1.3em;
+             font-weight: 600;
+             margin-bottom: 20px;
+             color: var(--text-primary);
+             border-bottom: 1px solid var(--border-light);
+             padding-bottom: 10px;
+              display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+          .step-section h2 .step-number {
+              background-color: var(--accent-secondary);
+              color: #fff;
+              border-radius: 50%;
+              width: 28px;
+              height: 28px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.8em;
+              font-weight: bold;
+          }
+
+        /* --- Input Grid & Form Groups --- */
+        .input-grid {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 20px 25px; /* Row and column gap */
+         }
+         .form-group {
+             display: flex;
+             flex-direction: column;
+             margin-bottom: 10px; /* Space below each group */
+         }
+         .form-group label {
+             margin-bottom: 6px;
+             font-size: 0.9em;
+             color: var(--text-secondary);
+             font-weight: 500;
+         }
+          .form-group label i { margin-right: 5px; }
+         .form-group input[type="text"],
+         .form-group input[type="date"],
+         .form-group select,
+         .form-group textarea {
+             width: 100%;
+             padding: 10px 12px;
+             background-color: var(--bg-input);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             color: var(--text-primary);
+             font-family: inherit;
+             font-size: 0.95em;
+         }
+          .form-group textarea { min-height: 60px; resize: vertical; }
+          .form-group input:focus,
+          .form-group select:focus,
+          .form-group textarea:focus {
+              outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+          }
+          .form-group small { font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; }
+
+        /* File Upload */
+        .upload-area {
+            border: 2px dashed var(--border-light); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; margin-bottom: 15px; background-color: var(--bg-input);
+        }
+        .upload-area:hover { background-color: rgba(84, 110, 122, 0.1); border-color: var(--accent-secondary); }
+        .upload-area i { font-size: 2.5em; color: var(--accent-secondary); margin-bottom: 10px; }
+        .upload-area p { margin-bottom: 5px; font-size: 0.95em; color: var(--text-secondary); }
+        .upload-area span { color: var(--accent-secondary); font-weight: 500; text-decoration: underline; }
+         .upload-area small { color: var(--text-secondary); font-size: 0.8em; display: block; margin-top: 8px; }
+
+         #uploaded-files-list { list-style: none; padding: 0; margin-top: 15px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-input); }
+          #uploaded-files-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
+          #uploaded-files-list li:last-child { border-bottom: none; }
+           #uploaded-files-list .file-icon { margin-right: 8px; color: var(--text-secondary); }
+           #uploaded-files-list .file-name { flex-grow: 1; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+           #uploaded-files-list .remove-file-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 1.1em; padding: 0 5px; opacity: 0.7; }
+           #uploaded-files-list .remove-file-btn:hover { opacity: 1; }
+
+        /* Task Selection */
+         .options-list label { /* Individual checkbox label */
+            display: flex; align-items: center; background-color: var(--bg-input); padding: 10px 15px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; transition: border-color 0.2s ease; font-size: 0.95em; font-weight: normal; color: var(--text-primary); margin-bottom: 10px; /* Spacing between checkboxes */
+        }
+         .options-list label:hover { border-color: var(--border-light); }
+         .options-list input[type="checkbox"] { margin-right: 10px; accent-color: var(--accent-secondary); width: 16px; height: 16px; flex-shrink: 0; }
+          .options-list .option-description { font-size: 0.85em; color: var(--text-secondary); margin-left: 26px; /* Align with text */ margin-top: -5px; }
+
+
+         /* --- Prepare Button --- */
+         .prepare-trigger-section { text-align: center; padding-top: 15px; margin-bottom: 25px; }
+          #prepare-button { padding: 12px 35px; font-size: 1.1em; background-color: var(--accent-secondary); color: #fff; font-weight: 600; }
+          #prepare-button:hover { background-color: #455a64; } /* Darker blue-grey */
+          #prepare-button:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+
+        /* --- Results Section --- */
+         #results-section { background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; }
+         #results-section h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); border-bottom: 1px solid var(--border-light); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+          #results-section h2 .step-number { background-color: var(--accent-secondary); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; }
+
+         #preparation-status { text-align: center; margin-bottom: 25px; font-size: 1.1em; color: var(--accent-primary); padding: 15px; background-color: var(--bg-input); border-radius: 6px; }
+         #preparation-status i { margin-right: 8px; }
+
+         .results-output { display: flex; flex-direction: column; gap: 25px; }
+         .output-block { background-color: var(--bg-input); padding: 20px; border-radius: 6px; border: 1px solid var(--border-color); }
+         .output-block h3 { font-size: 1.2em; font-weight: 600; color: var(--accent-secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+          .output-block h3 i { font-size: 1.1em; }
+         .output-block .content { font-size: 0.95em; line-height: 1.6; color: var(--text-primary); }
+          .output-block .content pre { /* For formatted text like agenda/minutes */ white-space: pre-wrap; word-wrap: break-word; background-color: var(--bg-tertiary); padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); font-family: Consolas, Monaco, monospace; max-height: 400px; overflow-y: auto; }
+          .output-block .content ul { list-style: disc; padding-left: 25px; margin: 10px 0; }
+          .output-block .content li { margin-bottom: 8px; }
+
+        /* Action Item Table */
+         .action-items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+         .action-items-table th, .action-items-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
+         .action-items-table th { background-color: var(--bg-tertiary); font-weight: 600; }
+         .action-items-table td select { /* Status dropdown */ padding: 4px 6px; font-size: 0.9em; background-color: var(--bg-secondary); border-color: var(--border-light); border-radius: 4px; color: var(--text-primary); cursor: pointer; }
+         /* Color coding for status */
+          .action-items-table .status-pending { color: var(--danger-color); }
+          .action-items-table .status-in-progress { color: var(--warning-color); }
+          .action-items-table .status-completed { color: var(--success-color); text-decoration: line-through; }
+
+         /* Download Area */
+          #download-area { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-light); }
+          .download-btn { display: inline-block; padding: 10px 20px; background-color: var(--accent-primary); color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background-color 0.2s ease; margin: 0 10px; }
+          .download-btn i { margin-right: 8px; }
+          .download-btn:hover { background-color: #3a7bc8; }
+
+
+        /* General Button Style */
+        .btn { padding: 9px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease; font-family: var(--font-family); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+        .btn i { margin-right: 8px; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="assistant-container">
+        <header class="assistant-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-users-cog"></i> Board Meeting Assistant</h1>
+        </header>
+
+        <section id="setup-section" class="step-section">
+             <h2><span class="step-number">1</span> Meeting Details & Documents</h2>
+             <div class="input-grid">
+                 <div class="form-group"> <!-- Meeting Details -->
+                    <label for="meeting-date"><i class="far fa-calendar-alt"></i> Meeting Date*</label>
+                    <input type="date" id="meeting-date">
+
+                    <label for="meeting-title" style="margin-top: 15px;"><i class="fas fa-heading"></i> Meeting Title/Purpose*</label>
+                    <input type="text" id="meeting-title" placeholder="e.g., Q4 Board Meeting, Strategy Review">
+
+                    <label for="attendees" style="margin-top: 15px;"><i class="fas fa-users"></i> Key Attendees (Optional)</label>
+                    <textarea id="attendees" rows="2" placeholder="Names or roles, comma-separated. Helps AI tailor summaries."></textarea>
+
+                     <label for="prev-minutes-link" style="margin-top: 15px;"><i class="fas fa-link"></i> Link to Previous Minutes (Optional)</label>
+                     <input type="text" id="prev-minutes-link" placeholder="URL if available online">
+
+                 </div>
+
+                 <div class="form-group"> <!-- File Upload -->
+                    <label for="file-upload-input"><i class="fas fa-paperclip"></i> Upload Relevant Documents*</label>
+                     <div class="upload-area" id="upload-area">
+                        <input type="file" id="file-upload-input" accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xlsx,.xls" multiple hidden/>
+                        <label for="file-upload-input">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & Drop docs here</p>
+                            <p>(Updates, Financials, Presentations)</p>
+                            <p>or <span>Browse Files</span></p>
+                            <small>(Supports common office formats)</small>
+                        </label>
+                    </div>
+                     <ul id="uploaded-files-list">
+                        <li id="no-files-message" style="color: var(--text-secondary); font-style: italic;">No files selected.</li>
+                     </ul>
+                 </div>
+            </div>
+        </section>
+
+         <section id="tasks-section" class="step-section">
+             <h2><span class="step-number">2</span> Select Assistant Tasks</h2>
+             <div class="options-list">
+                 <label>
+                    <input type="checkbox" name="assistant_task" value="generate_agenda" checked>
+                    <span>Generate Draft Agenda</span>
+                    <span class="option-description">Create a standard board meeting agenda structure.</span>
+                 </label>
+                 <label>
+                    <input type="checkbox" name="assistant_task" value="summarize_updates" checked>
+                     <span>Summarize Document Updates</span>
+                    <span class="option-description">Extract key points and updates from uploaded documents.</span>
+                 </label>
+                 <label>
+                    <input type="checkbox" name="assistant_task" value="draft_minutes">
+                     <span>Prepare Minutes Template</span>
+                    <span class="option-description">Create a pre-filled template based on the agenda for note-taking.</span>
+                 </label>
+                 <label>
+                    <input type="checkbox" name="assistant_task" value="track_actions" checked>
+                    <span>Identify & Track Action Items</span>
+                    <span class="option-description">Extract potential action items from documents and previous minutes (if linked).</span>
+                 </label>
+             </div>
+              <div class="form-group" style="margin-top: 20px;">
+                 <label for="specific-instructions"><i class="fas fa-info-circle"></i> Specific Instructions (Optional)</label>
+                 <textarea id="specific-instructions" rows="2" placeholder="e.g., 'Focus summaries on financial performance only', 'Prioritize action items related to Project X'"></textarea>
+             </div>
+        </section>
+
+        <section id="prepare-trigger-section" class="prepare-trigger-section">
+            <button id="prepare-button" class="btn" disabled><i class="fas fa-cogs"></i> Prepare Board Pack Materials</button>
+        </section>
+
+        <section id="results-section" class="step-section hidden">
+             <h2><span class="step-number">3</span> Prepared Materials</h2>
+             <div id="preparation-status" class="hidden">
+                 <i class="fas fa-spinner fa-spin"></i> Preparing materials... This might take a few moments depending on document size.
+             </div>
+             <div id="results-output" class="results-output">
+                 <!-- Output blocks (Agenda, Summaries, Minutes, Actions) will be appended here -->
+             </div>
+              <div id="download-area" class="hidden">
+                  <a href="#" id="download-pack-link" download="Board_Pack.zip" class="download-btn">
+                     <i class="fas fa-file-archive"></i> Download Full Pack (.zip - Simulated)
+                 </a>
+                  <a href="#" id="download-agenda-link" download="Board_Agenda.docx" class="download-btn">
+                     <i class="fas fa-file-word"></i> Download Agenda (.docx - Simulated)
+                 </a>
+                  <!-- Add more specific download buttons if needed -->
+             </div>
+        </section>
+
+    </div> <!-- End assistant Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const meetingDateInput = document.getElementById('meeting-date');
+            const meetingTitleInput = document.getElementById('meeting-title');
+            const attendeesInput = document.getElementById('attendees');
+            const prevMinutesLinkInput = document.getElementById('prev-minutes-link');
+
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileListUl = document.getElementById('uploaded-files-list');
+            const noFilesMessageLi = document.getElementById('no-files-message');
+
+            const taskCheckboxes = document.querySelectorAll('input[name="assistant_task"]');
+            const instructionsInput = document.getElementById('specific-instructions');
+
+            const prepareButton = document.getElementById('prepare-button');
+            const resultsSection = document.getElementById('results-section');
+            const preparationStatus = document.getElementById('preparation-status');
+            const resultsOutputContainer = document.getElementById('results-output');
+            const downloadArea = document.getElementById('download-area');
+            // const downloadPackLink = document.getElementById('download-pack-link');
+            // const downloadAgendaLink = document.getElementById('download-agenda-link');
+
+
+            let selectedFiles = []; // Store the File objects
+
+            // --- Functions ---
+
+            function handleFiles(files) {
+                noFilesMessageLi.classList.add('hidden');
+                for (const file of files) {
+                    // Add basic validation if needed, though accepting many types here
+                    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                         selectedFiles.push(file);
+                         addFileToListUI(file);
+                    }
+                }
+                checkIfReadyToPrepare();
+            }
+
+             function addFileToListUI(file) {
+                 const li = document.createElement('li');
+                 li.dataset.fileName = file.name;
+                 const iconClass = getFileIconClass(file.name); // Get appropriate icon
+                 li.innerHTML = `
+                     <i class="fas ${iconClass} file-icon"></i>
+                     <span class="file-name" title="${escapeHtml(file.name)} (${formatBytes(file.size)})">${escapeHtml(file.name)}</span>
+                     <button class="remove-file-btn" title="Remove file">×</button>
+                 `;
+                 fileListUl.appendChild(li);
+                 li.querySelector('.remove-file-btn').addEventListener('click', () => { removeFile(file.name); li.remove(); checkIfReadyToPrepare(); });
+             }
+
+             function removeFile(fileName) {
+                 selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+                 if (selectedFiles.length === 0) { noFilesMessageLi.classList.remove('hidden'); }
+                 console.log("Remaining files:", selectedFiles.map(f => f.name));
+             }
+
+             function getFileIconClass(filename) {
+                 const ext = filename.split('.').pop().toLowerCase();
+                 if (['doc', 'docx'].includes(ext)) return 'fa-file-word';
+                 if (['xls', 'xlsx'].includes(ext)) return 'fa-file-excel';
+                 if (['ppt', 'pptx'].includes(ext)) return 'fa-file-powerpoint';
+                 if (ext === 'pdf') return 'fa-file-pdf';
+                 if (['txt', 'md'].includes(ext)) return 'fa-file-alt';
+                 if (['zip', 'rar', '7z'].includes(ext)) return 'fa-file-archive';
+                 return 'fa-file'; // Default icon
+             }
+
+            function checkIfReadyToPrepare() {
+                // Define required fields
+                const dateValue = meetingDateInput.value;
+                const titleText = meetingTitleInput.value.trim();
+                let taskSelected = false;
+                taskCheckboxes.forEach(cb => { if (cb.checked) taskSelected = true; });
+
+                // Enable button only if required fields filled, files uploaded, and task selected
+                prepareButton.disabled = !(dateValue && titleText && selectedFiles.length > 0 && taskSelected);
+            }
+
+            function runPreparation() {
+                if (prepareButton.disabled) return;
+
+                 // Capture context and selected tasks
+                 const meetingContext = {
+                     date: meetingDateInput.value,
+                     title: meetingTitleInput.value.trim(),
+                     attendees: attendeesInput.value.trim() || null,
+                     prevMinutesLink: prevMinutesLinkInput.value.trim() || null,
+                     uploadedFilenames: selectedFiles.map(f => f.name)
+                 };
+                 const selectedTasks = Array.from(taskCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+                 const specificInstructions = instructionsInput.value.trim() || null;
+
+
+                console.log("Preparing for meeting:", meetingContext);
+                console.log("Selected Tasks:", selectedTasks);
+                console.log("Instructions:", specificInstructions);
+
+                // Show processing state
+                resultsSection.classList.remove('hidden');
+                preparationStatus.classList.remove('hidden');
+                resultsOutputContainer.innerHTML = ''; // Clear previous results
+                downloadArea.classList.add('hidden'); // Hide download links initially
+                prepareButton.disabled = true;
+                prepareButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                 // Optional: Disable inputs while preparing
+                 document.querySelectorAll('.step-section input, .step-section select, .step-section textarea, .step-section input[type=checkbox]').forEach(el => el.disabled = true);
+
+                // --- *** SIMULATE BACKEND ANALYSIS (Gemini API Call + Document Processing) *** ---
+                // In a real app:
+                // 1. Upload `selectedFiles` to backend storage.
+                // 2. Backend extracts text/data from each file type (PDF, DOCX, PPTX, XLSX). This is complex.
+                // 3. Send extracted content, `meetingContext`, `selectedTasks`, and `specificInstructions` to Gemini.
+                // 4. Prompt Gemini to perform each selected task based on the provided info:
+                //    - **generate_agenda:** Create a structured agenda (e.g., using Markdown) including sections based on typical board meetings and potentially inferred topics from uploaded docs.
+                //    - **summarize_updates:** Read through document content and provide concise bullet-point summaries for each major update or document. Mention source doc.
+                //    - **draft_minutes:** Generate a Markdown or pre-formatted text template for minutes, including attendees (if provided), agenda items as sections, and space for notes/decisions.
+                //    - **track_actions:** Scan previous minutes (if linked/uploaded) and current documents for potential action items (phrases like "ACTION:", "TODO:", "Follow up:", names + verbs). Assign owners if possible and suggest due dates. List existing and newly identified items.
+                // 5. Receive structured results (JSON) containing the generated content for each requested task.
+
+                setTimeout(() => {
+                    preparationStatus.classList.add('hidden');
+                    prepareButton.disabled = false; // Re-enable button
+                    prepareButton.innerHTML = '<i class="fas fa-cogs"></i> Prepare Board Pack Materials';
+                     // Re-enable inputs if they were disabled
+                     document.querySelectorAll('.step-section input, .step-section select, .step-section textarea, .step-section input[type=checkbox]').forEach(el => el.disabled = false);
+
+
+                    // --- *** DISPLAY SIMULATED RESULTS *** ---
+                    const simulatedResults = getSimulatedResults(meetingContext, selectedTasks);
+                    displayResults(simulatedResults);
+                    if (Object.keys(simulatedResults).length > 0) { // Only show download if results exist
+                         downloadArea.classList.remove('hidden');
+                         // Set appropriate download filenames (optional)
+                         // downloadPackLink.setAttribute('download', `Board_Pack_${meetingContext.date}.zip`);
+                         // downloadAgendaLink.setAttribute('download', `Board_Agenda_${meetingContext.date}.docx`);
+                    }
+
+
+                    console.log("Simulated preparation complete.");
+
+                }, 3000 + selectedFiles.length * 500); // Simulate time based on file count
+            }
+
+            function displayResults(results) {
+                 resultsOutputContainer.innerHTML = ''; // Clear just in case
+
+                 // Render blocks based on what was generated
+                 if (results.agenda) {
+                     resultsOutputContainer.innerHTML += createResultBlockHTML('agenda', 'Draft Agenda', 'fas fa-list-ol', `<pre>${escapeHtml(results.agenda)}</pre>`);
+                 }
+                 if (results.summaries && results.summaries.length > 0) {
+                      const summaryItems = results.summaries.map(item => `<li><strong>${escapeHtml(item.source)}:</strong> ${escapeHtml(item.summary)}</li>`).join('');
+                      resultsOutputContainer.innerHTML += createResultBlockHTML('summaries', 'Document Summaries', 'fas fa-book-reader', `<ul>${summaryItems}</ul>`);
+                 }
+                 if (results.minutesTemplate) {
+                      resultsOutputContainer.innerHTML += createResultBlockHTML('minutes', 'Minutes Template', 'fas fa-file-alt', `<pre>${escapeHtml(results.minutesTemplate)}</pre>`);
+                 }
+                 if (results.actionItems && results.actionItems.length > 0) {
+                      resultsOutputContainer.innerHTML += createActionItemsTableHTML('actions', 'Action Items', 'fas fa-tasks', results.actionItems);
+                      // Add event listeners to newly created status dropdowns
+                       addStatusChangeListeners();
+                 }
+            }
+
+            // Helper to create HTML for a standard result block
+            function createResultBlockHTML(typeClass, title, iconClass, contentHTML) {
+                 return `
+                    <div class="output-block ${typeClass}">
+                        <h3><i class="fas ${iconClass}"></i> ${escapeHtml(title)}</h3>
+                        <div class="content">${contentHTML}</div>
+                    </div>`;
+            }
+
+             // Helper to create HTML specifically for the action items table
+             function createActionItemsTableHTML(typeClass, title, iconClass, actionItems) {
+                  // Sort items: Pending > In Progress > Completed
+                  actionItems.sort((a, b) => {
+                      const statusOrder = { 'Pending': 0, 'In Progress': 1, 'Completed': 2 };
+                      return statusOrder[a.status] - statusOrder[b.status];
+                  });
+
+                 let tableRows = actionItems.map((item, index) => `
+                    <tr data-index="${index}">
+                        <td>${escapeHtml(item.item)}</td>
+                        <td>${escapeHtml(item.owner || 'Unassigned')}</td>
+                        <td>${escapeHtml(item.dueDate || 'N/A')}</td>
+                        <td>
+                            <select class="action-status-select status-${item.status.toLowerCase().replace(' ','-')}" data-current-status="${item.status}">
+                                <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            </select>
+                        </td>
+                    </tr>`).join('');
+
+                 let tableHTML = `
+                     <div class="action-items-table-container">
+                         <table class="action-items-table">
+                             <thead>
+                                 <tr>
+                                     <th>Action Item</th>
+                                     <th>Owner</th>
+                                     <th>Due Date</th>
+                                     <th>Status</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 ${tableRows}
+                             </tbody>
+                         </table>
+                     </div>
+                 `;
+                 return createResultBlockHTML(typeClass, title, iconClass, tableHTML);
+             }
+
+             // Add listeners to status dropdowns after table is created
+             function addStatusChangeListeners() {
+                 document.querySelectorAll('.action-status-select').forEach(select => {
+                     // Remove existing listener to prevent duplicates if re-rendered
+                     select.removeEventListener('change', handleStatusChange);
+                     // Add new listener
+                     select.addEventListener('change', handleStatusChange);
+                     // Update initial class
+                     updateStatusClass(select);
+                 });
+             }
+
+             // Handle status change event
+             function handleStatusChange(event) {
+                 const select = event.target;
+                 updateStatusClass(select);
+                 // In a real app, you'd likely save this status change somewhere
+                 console.log(`Action item status changed to: ${select.value} (was ${select.dataset.currentStatus})`);
+                  select.dataset.currentStatus = select.value; // Update stored status
+             }
+
+             // Update CSS class based on selected status
+             function updateStatusClass(selectElement) {
+                  const selectedStatus = selectElement.value;
+                  selectElement.classList.remove('status-pending', 'status-in-progress', 'status-completed');
+                  selectElement.classList.add(`status-${selectedStatus.toLowerCase().replace(' ','-')}`);
+             }
+
+
+            function getSimulatedResults(context, tasks) {
+                // Generate dummy results based on tasks selected
+                const results = {};
+                 const company = context.title.split(' ')[0] || 'Company'; // Guess company name
+
+                if (tasks.includes('generate_agenda')) {
+                    results.agenda = `**${escapeHtml(context.title)} - Board Meeting Agenda**
+Date: ${context.date}
+Location: [Board Room / Virtual Link]
+Attendees: ${context.attendees || '[List Attendees]'}
+
+1.  Call to Order & Approval of Previous Minutes (${context.prevMinutesLink ? `[Link](${context.prevMinutesLink})` : '[Attach/Link]'})
+2.  CEO Update & Performance Review (Based on uploaded reports)
+    a. Key Metrics Dashboard
+    b. Financial Highlights (Ref: ${context.uploadedFilenames.find(f => f.toLowerCase().includes('financ')) || 'Financials.xlsx'})
+    c. Sales & Marketing Update (Ref: ${context.uploadedFilenames.find(f => f.toLowerCase().includes('update')) || 'Updates.docx'})
+3.  Strategic Discussion: [Topic based on meeting title/purpose, e.g., Q1 Strategy]
+4.  Action Item Review (From previous minutes & current findings)
+5.  [Specific Topic from Docs/Instructions if provided]
+6.  Other Business
+7.  Adjournment`;
+                }
+
+                if (tasks.includes('summarize_updates')) {
+                    results.summaries = [];
+                    context.uploadedFilenames.forEach(filename => {
+                        if (!filename.toLowerCase().includes('minute')) { // Don't summarize minutes usually
+                             results.summaries.push({
+                                source: filename,
+                                summary: `Key update from ${filename}: [Simulated bullet points summarizing the likely content, e.g., "- Revenue increased X%", "- New partnership signed with Y", "- Product Z launch delayed to Q{N+1}"]`
+                            });
+                        }
+                    });
+                    if (results.summaries.length === 0) { // Add default if no docs seemed like updates
+                         results.summaries.push({ source: 'General', summary: 'No specific update documents identified for summarization, review uploaded files for details.'});
+                    }
+                }
+
+                if (tasks.includes('draft_minutes')) {
+                      results.minutesTemplate = `**${escapeHtml(context.title)} - DRAFT Board Meeting Minutes**
+Date: ${context.date}
+Attendees Present: ${context.attendees || '[List Present]'}
+Attendees Absent: [List Absent]
+Guests: [List Guests]
+
+**1. Call to Order & Approval of Previous Minutes**
+   - Meeting called to order at [Time] by [Chairperson].
+   - Previous minutes dated [Date] were [Approved / Approved as amended / Deferred].
+
+**2. CEO Update & Performance Review**
+   - Key discussion points: [Space for notes]
+   - Decisions/Motions: [Space for notes]
+
+**3. Strategic Discussion: [Topic from Agenda]**
+   - Key discussion points: [Space for notes]
+   - Decisions/Motions: [Space for notes]
+
+**4. Action Item Review**
+   - Status of previous action items reviewed.
+   - New action items identified (see below).
+
+**5. [Other Agenda Item]**
+   - Key discussion points: [Space for notes]
+   - Decisions/Motions: [Space for notes]
+
+**6. Other Business**
+   - [Space for notes]
+
+**7. Adjournment**
+   - Meeting adjourned at [Time].
+
+**Action Items:**
+| Item Description | Owner | Due Date | Status |
+|---|---|---|---|
+| [Action Item 1] | [Name] | [Date] | Pending |
+| ... | ... | ... | ... |
+
+Minutes recorded by: [Your Name/Secretary]
+Approved by: [Chairperson Signature/Approval Date]`;
+                 }
+
+                 if (tasks.includes('track_actions')) {
+                      results.actionItems = [ // Mix of statuses
+                          { item: `Finalize Q{N+1} budget based on discussion.`, owner: 'CFO', dueDate: `Next Week`, status: 'Pending' },
+                          { item: `Follow up with potential partner Z identified in ${context.uploadedFilenames[1] || 'Updates.docx'}.`, owner: 'CEO', dueDate: `End of Month`, status: 'In Progress' },
+                           ...(context.prevMinutesLink ? [{ item: `Review progress on Action Item from ${context.prevMinutesLink.split('/').pop()}.`, owner: 'Relevant VP', dueDate: `This Meeting`, status: 'Pending'}] : []), // Simulate from prev minutes
+                          { item: `Circulate draft strategic plan to board.`, owner: 'CEO', dueDate: `Last Month`, status: 'Completed' }
+                      ];
+                  }
+
+
+                return results;
+            }
+
+            // --- Utility Functions ---
+             function escapeHtml(unsafe) {
+                 if (unsafe === null || typeof unsafe === 'undefined') return '';
+                 const div = document.createElement('div');
+                 div.textContent = String(unsafe);
+                 return div.innerHTML;
+             }
+            function formatBytes(bytes, decimals = 2) {
+                 if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+            // --- Initial Setup ---
+             checkIfReadyToPrepare(); // Initial button state check
+             resultsSection.classList.add('hidden'); // Ensure results are hidden initially
+
+             // Event Listeners
+             fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+             [meetingDateInput, meetingTitleInput].forEach(el => { el.addEventListener('input', checkIfReadyToPrepare); });
+             taskCheckboxes.forEach(cb => cb.addEventListener('change', checkIfReadyToPrepare));
+             prepareButton.addEventListener('click', runPreparation);
+
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Swag - Chat with Document</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* --- Base Styles & Variables (Dark Theme) --- */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --bg-input: #252525;
+            --bg-chat-user: #0b3d7a; /* Slightly different blue for user chat */
+            --bg-chat-ai: #2f2f2f; /* Darker gray for AI chat */
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #4a90e2; /* Blue */
+            --accent-secondary: #6a737d; /* Grayish for document chat */
+            --border-color: #3a3a3a;
+            --border-light: #555;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex; /* Use flex for full height layout */
+            flex-direction: column;
+        }
+
+        .chatdoc-container {
+            max-width: 900px; /* Good width for chat */
+            width: 100%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Allow container to grow */
+            max-height: calc(100vh - 40px); /* Limit height relative to viewport */
+        }
+
+        .chatdoc-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px; /* Space below header */
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        .chatdoc-header h1 {
+            font-size: 1.6em; /* Slightly smaller title */
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+        .chatdoc-header h1 i {
+            margin-right: 10px;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .back-link i {
+            margin-right: 5px;
+        }
+
+
+        /* --- File Input --- */
+        .file-upload-section {
+             padding: 15px;
+             background-color: var(--bg-tertiary);
+             border-radius: 6px;
+             margin-bottom: 20px;
+             flex-shrink: 0; /* Prevent shrinking */
+        }
+         .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 20px; /* Slightly less padding */
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 15px;
+        }
+        .upload-area:hover {
+            background-color: rgba(106, 115, 125, 0.1); /* Use accent color */
+            border-color: var(--accent-secondary);
+        }
+        .upload-area i {
+            font-size: 2.5em;
+            color: var(--accent-secondary);
+            margin-bottom: 10px;
+        }
+        .upload-area p {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+        .upload-area span {
+            color: var(--accent-secondary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+         .upload-area small {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            display: block;
+            margin-top: 8px;
+        }
+         .file-info {
+            padding: 8px 12px;
+            background-color: rgba(106, 115, 125, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* --- Chat Section --- */
+         .chat-section {
+            flex-grow: 1; /* Takes remaining vertical space */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent content overflow */
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-tertiary);
+         }
+
+         #chat-display {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Make scrollable */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Space between messages */
+         }
+
+         .message {
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 75%; /* Limit message width */
+            line-height: 1.5;
+            word-wrap: break-word; /* Wrap long words */
+            font-size: 0.95em;
+            position: relative; /* For potential future elements like copy buttons */
+             white-space: pre-wrap; /* Respect newlines in messages */
+         }
+
+         .message.user {
+            background-color: var(--bg-chat-user);
+            color: #f0f0f0;
+            border-bottom-right-radius: 4px; /* Chat bubble shape */
+            align-self: flex-end; /* Align user messages to the right */
+         }
+
+         .message.ai {
+            background-color: var(--bg-chat-ai);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px; /* Chat bubble shape */
+            align-self: flex-start; /* Align AI messages to the left */
+         }
+         .message.ai strong { /* Highlight potential references */
+            color: var(--accent-primary);
+            font-weight: 500;
+         }
+          .message.info { /* For system messages */
+             background-color: transparent;
+             color: var(--text-secondary);
+             font-size: 0.85em;
+             text-align: center;
+             align-self: center;
+             max-width: 100%;
+             padding: 5px;
+         }
+
+
+         #typing-indicator {
+             align-self: flex-start;
+             color: var(--text-secondary);
+             font-style: italic;
+             font-size: 0.9em;
+             padding: 5px 15px;
+         }
+         #typing-indicator span { /* Animated dots */
+             display: inline-block;
+             animation: typing-dots 1.2s infinite;
+             opacity: 0;
+         }
+         #typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+         #typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+         @keyframes typing-dots {
+             0%, 60%, 100% { opacity: 0; transform: translateY(0); }
+             30% { opacity: 1; transform: translateY(-2px); }
+         }
+
+
+         .chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-tertiary); /* Match chat section bg */
+            flex-shrink: 0; /* Prevent shrinking */
+         }
+
+         #chat-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px; /* Pill shape */
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1em;
+            margin-right: 10px;
+            resize: none; /* Disable textarea resize if using textarea */
+            height: 42px; /* Match button height */
+            line-height: 1.5; /* Better vertical alignment */
+         }
+         #chat-input:focus {
+             outline: none;
+             border-color: var(--accent-primary);
+             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+         }
+          #chat-input:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+         }
+
+         #send-button {
+             padding: 0 15px; /* Adjust padding for icon */
+             font-size: 1.2em; /* Make icon slightly larger */
+             background-color: var(--accent-primary);
+             color: white;
+             border: none;
+             border-radius: 50%; /* Circular button */
+             cursor: pointer;
+             height: 42px;
+             width: 42px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             transition: background-color 0.2s ease;
+         }
+         #send-button:hover {
+             background-color: #3a7bc8;
+         }
+          #send-button:disabled {
+              background-color: var(--border-light);
+              cursor: not-allowed;
+         }
+
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+    </style>
+
+</head>
+<body>
+
+    <div class="chatdoc-container">
+        <header class="chatdoc-header">
+            <a href="AIApp222.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Hub</a>
+            <h1><i class="fas fa-comments-dollar"></i> Chat with Document</h1> <!-- Icon subject to change -->
+        </header>
+
+        <section id="file-upload-section" class="file-upload-section">
+            <div class="upload-area" id="upload-area">
+                <input type="file" id="file-upload-input" accept=".pdf,.doc,.docx,.txt,.md" hidden/> <!-- Accept common doc types + Markdown -->
+                <label for="file-upload-input">
+                    <i class="fas fa-file-upload"></i>
+                    <p>Upload or Drop your document here</p>
+                    <small>(Supports: PDF, DOCX, TXT, MD)</small>
+                </label>
+            </div>
+            <div id="file-info" class="file-info hidden">
+                Chatting with: <strong id="loaded-file-name"></strong>
+            </div>
+        </section>
+
+        <section id="chat-section" class="chat-section hidden">
+             <div id="chat-display" aria-live="polite">
+                 <!-- Messages will appear here -->
+                 <div class="message info">Upload a document to start chatting.</div>
+             </div>
+
+             <div id="typing-indicator" class="hidden">
+                 AI is thinking<span>.</span><span>.</span><span>.</span>
+             </div>
+
+             <div class="chat-input-area">
+                 <input type="text" id="chat-input" placeholder="Ask a question about the document..." disabled>
+                 <button id="send-button" title="Send Message" disabled><i class="fas fa-paper-plane"></i></button>
+             </div>
+        </section>
+
+    </div> <!-- End chatdoc Container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileInfoDiv = document.getElementById('file-info');
+            const loadedFileName = document.getElementById('loaded-file-name');
+
+            const chatSection = document.getElementById('chat-section');
+            const chatDisplay = document.getElementById('chat-display');
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-button');
+            const typingIndicator = document.getElementById('typing-indicator');
+
+            let selectedFile = null; // Store the File object
+            let isAiTyping = false;
+
+            // --- Event Listeners ---
+
+            // File Input Handling
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--accent-secondary)';
+                uploadArea.style.backgroundColor = 'rgba(106, 115, 125, 0.05)';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border-light)';
+                uploadArea.style.backgroundColor = 'transparent';
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            // Send Button Click
+            sendButton.addEventListener('click', sendMessage);
+
+            // Enter Key in Input
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { // Send on Enter, allow Shift+Enter for newline
+                    e.preventDefault(); // Prevent default newline behavior
+                    sendMessage();
+                }
+            });
+
+            // --- Functions ---
+
+            function handleFile(file) {
+                 // Basic validation (can add more specific types if needed)
+                console.log("File selected:", file.name, file.type);
+                selectedFile = file;
+
+                // Display file info
+                loadedFileName.textContent = file.name;
+                fileInfoDiv.classList.remove('hidden');
+
+                // Show chat and enable input
+                chatSection.classList.remove('hidden');
+                chatInput.disabled = false;
+                sendButton.disabled = false;
+
+                // Clear previous messages and add initial prompt
+                chatDisplay.innerHTML = ''; // Clear chat
+                addMessageToChat(`Document "${file.name}" loaded. Ask me anything about its content.`, 'ai');
+                chatInput.focus();
+            }
+
+            function sendMessage() {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage || isAiTyping) {
+                    return; // Don't send empty messages or while AI is typing
+                }
+
+                addMessageToChat(userMessage, 'user');
+                chatInput.value = ''; // Clear input field
+                showTypingIndicator(true);
+
+                // --- *** SIMULATE BACKEND PROCESSING & AI RESPONSE *** ---
+                // In a real app:
+                // 1. You'd likely have processed/indexed the document when it was uploaded.
+                // 2. Send `userMessage` and context (e.g., document ID or content chunks) to your backend.
+                // 3. The backend uses an LLM (like GPT, Claude) with Retrieval-Augmented Generation (RAG)
+                //    to find relevant parts of the document and generate an answer based *only* on that context.
+                // 4. Receive the answer from the backend.
+
+                setTimeout(() => {
+                    const aiResponse = getSimulatedResponse(userMessage);
+                    showTypingIndicator(false);
+                    addMessageToChat(aiResponse, 'ai');
+                }, 1500 + Math.random() * 1000); // Simulate variable delay
+            }
+
+            function addMessageToChat(text, sender) {
+                 // Remove initial info message if it exists
+                 const initialInfo = chatDisplay.querySelector('.message.info');
+                 if (initialInfo) initialInfo.remove();
+
+                 const messageElement = document.createElement('div');
+                 messageElement.classList.add('message', sender);
+                 messageElement.textContent = text; // Use textContent for security
+                 chatDisplay.appendChild(messageElement);
+                 scrollToBottom();
+            }
+
+            function showTypingIndicator(show) {
+                isAiTyping = show;
+                typingIndicator.classList.toggle('hidden', !show);
+                chatInput.disabled = show; // Disable input while AI is typing
+                sendButton.disabled = show;
+                if (show) {
+                     scrollToBottom(); // Scroll down to show indicator if needed
+                }
+            }
+
+            function scrollToBottom() {
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+
+            function getSimulatedResponse(userMessage) {
+                const lowerMessage = userMessage.toLowerCase();
+                // Simple keyword-based responses for demo
+                if (lowerMessage.includes("summary") || lowerMessage.includes("summarize") || lowerMessage.includes("conclusion")) {
+                    return "Based on the document, the key points are [Point A], [Point B], and the main conclusion suggests [Main Outcome]. (Simulated summary)";
+                } else if (lowerMessage.includes("date") || lowerMessage.includes("when")) {
+                    return "According to the document, the relevant date mentioned is [Specific Date, e.g., Q3 2024]. (Simulated date extraction)";
+                } else if (lowerMessage.includes("who") || lowerMessage.includes("name")) {
+                    return "The document mentions individuals such as [Name 1] and [Name 2] in relation to [Context]. (Simulated name extraction)";
+                } else if (lowerMessage.includes("what is") || lowerMessage.includes("define")) {
+                     return "The document defines [Term] as [Definition found in the text]. (Simulated definition)";
+                } else if (lowerMessage.includes("hello") || lowerMessage.includes("hi")) {
+                     return "Hello! How can I help you with the content of the document '" + (selectedFile ? selectedFile.name : 'the document') + "'?";
+                } else {
+                    return "I've checked the document. Based on the content, [mention something plausibly related to common document topics, e.g., 'the project status seems positive' or 'the figures indicate growth']. Please ask if you need more specific details from the text. (Simulated answer)";
+                    // Default fallback if no keywords match:
+                    // return "I have processed your question regarding the document. Please ask a more specific question about the content if this doesn't help.";
+                }
+            }
+
+            // --- Utility Functions ---
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes'; // Handle zero or non-numeric input
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+            // Initial state: Hide chat until file is uploaded
+            chatSection.classList.add('hidden');
+
+        }); // End DOMContentLoaded
+    </script>
+
+</body>
+</html>
